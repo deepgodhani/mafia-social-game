@@ -1,0 +1,33 @@
+import { useEffect } from "react";
+import socket from "./socket/socket";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import RoomPage from "./pages/RoomPage";
+
+function App() {
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log("Connected:", socket.id);
+    });
+
+    socket.on("connected", (data) => {
+      console.log("Server says:", data);
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("connected");
+    };
+  }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/room/:id" element={<RoomPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
