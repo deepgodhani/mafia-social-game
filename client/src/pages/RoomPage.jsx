@@ -13,6 +13,7 @@ function RoomPage() {
     const { room, setRoom } = useRoomStore();
     const { role, setRole } = usePlayerStore();
     const [timer, setTimer] = useState(null);
+    const [mafiaTeam, setMafiaTeam] = useState([]);
 
     const navigate = useNavigate();
 
@@ -20,6 +21,10 @@ function RoomPage() {
 
     const { stream, error, startMicrophone, audioRef, setMuted } = useMicrophone();
     const { createPeer, getPeer } = useWebRTC();
+
+    const canActAtNight =
+        room?.game?.phase === "NIGHT" &&
+        ["MAFIA", "DOCTOR", "DETECTIVE"].includes(role);
 
     const myUserId = token
         ? JSON.parse(atob(token.split(".")[1])).id
@@ -156,6 +161,25 @@ function RoomPage() {
     }, [room?.game?.phase, role]);
 
 
+    useEffect(() => {
+        socket.on("detective-result", (data) => {
+            alert(
+                `${data.targetName} is ${data.role}`
+            );
+        });
+
+        return () => socket.off("detective-result");
+    }, []);
+
+    useEffect(() => {
+        socket.on("mafia-team", (team) => {
+            console.log("[MAFIA TEAM]", team);
+            setMafiaTeam(team);
+        });
+
+        return () => socket.off("mafia-team");
+    }, []);
+
     return (
         <div className="min-h-screen bg-zinc-950 text-white p-6">
             <button onClick={() => navigate("/")} className="mb-4 text-blue-400 underline">
@@ -168,16 +192,38 @@ function RoomPage() {
                 <p>Timer: {timer ?? room?.game?.timer?.remaining ?? "-"}</p>
             </div>
             {room?.game?.phase === "ENDED" && (
-                <div className="mt-4 p-4 bg-green-700 rounded-xl text-center text-xl font-bold">
-                    {room?.game?.result === "CITIZENS_WIN"
-                        ? "Citizens Win!"
-                        : "Mafia Wins!"}
+                <div className="mt-4 p-4 bg-green-700 rounded-xl text-center">
+                    <p className="text-xl font-bold mb-3">
+                        {room?.game?.result === "CITIZENS_WIN"
+                            ? "Citizens Win!"
+                            : "Mafia Wins!"}
+                    </p>
+
+                    {room?.hostId === myUserId && (
+                        <button
+                            onClick={() =>
+                                socket.emit("play-again", { roomId: id })
+                            }
+                            className="bg-black px-4 py-2 rounded-lg"
+                        >
+                            Play Again
+                        </button>
+                    )}
                 </div>
             )}
 
             <div className="mb-4 p-3 bg-zinc-800 rounded-lg">
                 <p>My Role: {role || "Unknown"}</p>
             </div>
+            {role === "MAFIA" && mafiaTeam.length > 0 && (
+                <div className="mb-4 p-3 bg-red-900 rounded-lg">
+                    <p className="font-bold mb-2">Your Mafia Team:</p>
+
+                    {mafiaTeam.map((m) => (
+                        <p key={m.userId}>{m.name}</p>
+                    ))}
+                </div>
+            )}
             {room?.hostId === myUserId && !room?.game?.started && (
                 <button
                     onClick={() => socket.emit("start-game", { roomId: id })}
@@ -187,7 +233,29 @@ function RoomPage() {
                 </button>
             )}
             <h2 className="text-xl mb-2">Players:</h2>
+            {canActAtNight && (
+                <div className="mb-4 p-3 bg-zinc-800 rounded-lg">
+                    <p className="mb-2">Choose your night target:</p>
 
+                    {room?.players?.map((p) => (
+                        p.userId !== myUserId &&
+                        p.alive && (
+                            <button
+                                key={p.userId}
+                                onClick={() =>
+                                    socket.emit("night-action", {
+                                        roomId: id,
+                                        targetUserId: p.userId,
+                                    })
+                                }
+                                className="bg-red-600 px-3 py-2 rounded mr-2 mb-2"
+                            >
+                                {p.name}
+                            </button>
+                        )
+                    ))}
+                </div>
+            )}
             {room?.players?.map((player) => (
                 <PlayerCard
                     key={player.userId}

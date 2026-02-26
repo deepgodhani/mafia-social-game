@@ -3,8 +3,16 @@ export function getPublicRoomState(room) {
       id: room.id,
       hostId: room.hostId,
   
-      // convert object → array for frontend
-      players: Object.values(room.players),
+      players: Object.values(room.players).map((p) => ({
+        id: p.id,
+        userId: p.userId,
+        name: p.name,
+        picture: p.picture,
+        alive: p.alive,
+  
+        // ⭐ only reveal roles after game ends
+        role: room.game.phase === "ENDED" ? p.role : null,
+      })),
   
       game: {
         started: room.game.started,

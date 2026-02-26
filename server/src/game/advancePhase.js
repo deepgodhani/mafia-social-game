@@ -4,6 +4,7 @@ import { startPhaseTimer } from "./startPhaseTimer.js";
 import { resolveVotes } from "./resolveVotes.js";
 import { checkWinCondition } from "./checkWinCondition.js";
 import { emitRoomState } from "../rooms/emitRoomState.js";
+import { resolveNight } from "./resolveNight.js";
 
 export function advancePhase(io, roomId, room, roomTimers) {
     const current = room.game.phase;
@@ -55,6 +56,7 @@ export function advancePhase(io, roomId, room, roomTimers) {
 
         case PHASES.NIGHT:
             room.game.round += 1;
+            resolveNight(io, roomId, room);
             changePhase(io, roomId, room, PHASES.DAY);
             startPhaseTimer(io, roomId, room, 15, roomTimers);
             break;

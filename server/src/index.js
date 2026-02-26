@@ -17,6 +17,8 @@ import { advancePhase } from "./game/advancePhase.js";
 import { verifyGoogleToken } from "./auth/verifyGoogleToken.js";
 import { createToken } from "./auth/createToken.js";
 import { verifyToken } from "./auth/verifyToken.js";
+import { sendMafiaTeam } from "./game/sendMafiaTeam.js";
+import { resetGame } from "./game/resetGame.js";
 
 const app = express();
 const roomTimers = {};
@@ -133,6 +135,12 @@ io.on("connection", (socket) => {
                 },
 
                 round: 0,
+                
+                nightActions: {
+                    mafiaTarget: null,
+                    doctorSave: null,
+                    detectiveCheck: null,
+                },
             },
         };
 
@@ -204,7 +212,7 @@ io.on("connection", (socket) => {
 
         console.log("[ROLES]", room.game.roles);
         sendRoles(io, room);
-
+        sendMafiaTeam(io, room);
         changePhase(io, roomId, room, PHASES.STARTING);
 
         console.log(`[GAME STARTED] ${roomId}`);
@@ -254,40 +262,80 @@ io.on("connection", (socket) => {
     socket.on("webrtc-offer", ({ roomId, offer, targetUserId }) => {
         const room = rooms[roomId];
         if (!room) return;
-      
+
         const target = room.players[targetUserId];
         if (!target) return;
-      
+
         io.to(target.socketId).emit("webrtc-offer", {
-          offer,
-          fromUserId: socket.user.id,
+            offer,
+            fromUserId: socket.user.id,
         });
-      });
+    });
 
-      socket.on("webrtc-answer", ({ roomId, answer, targetUserId }) => {
+    socket.on("webrtc-answer", ({ roomId, answer, targetUserId }) => {
         const room = rooms[roomId];
         if (!room) return;
-      
+
         const target = room.players[targetUserId];
         if (!target) return;
-      
+
         io.to(target.socketId).emit("webrtc-answer", {
-          answer,
-          fromUserId: socket.user.id,
+            answer,
+            fromUserId: socket.user.id,
         });
-      });
+    });
 
-      socket.on("webrtc-ice-candidate", ({ roomId, candidate, targetUserId }) => {
+    socket.on("webrtc-ice-candidate", ({ roomId, candidate, targetUserId }) => {
+        const room = rooms[roomId];
+        if (!room) return;
+
+        const target = room.players[targetUserId];
+        if (!target) return;
+
+        io.to(target.socketId).emit("webrtc-ice-candidate", {
+            candidate,
+            fromUserId: socket.user.id,
+        });
+    });
+
+    socket.on("night-action", ({ roomId, targetUserId }) => {
         const room = rooms[roomId];
         if (!room) return;
       
-        const target = room.players[targetUserId];
-        if (!target) return;
+        const player = room.players[socket.user.id];
+        if (!player) return;
       
-        io.to(target.socketId).emit("webrtc-ice-candidate", {
-          candidate,
-          fromUserId: socket.user.id,
-        });
+        if (room.game.phase !== PHASES.NIGHT) return;
+      
+        const role = player.role;
+      
+        if (role === "MAFIA") {
+          room.game.nightActions.mafiaTarget = targetUserId;
+        }
+      
+        if (role === "DOCTOR") {
+          room.game.nightActions.doctorSave = targetUserId;
+        }
+      
+        if (role === "DETECTIVE") {
+          room.game.nightActions.detectiveCheck = targetUserId;
+        }
+      
+        console.log("[NIGHT ACTION]", role, "->", targetUserId);
+      });
+
+      socket.on("play-again", ({ roomId }) => {
+        const room = rooms[roomId];
+        if (!room) return;
+      
+        // only host can restart
+        if (room.hostId !== socket.user.id) return;
+      
+        resetGame(room);
+      
+        console.log("[GAME RESET]", roomId);
+      
+        emitRoomState(io, roomId, room);
       });
 
     socket.on("disconnect", () => {

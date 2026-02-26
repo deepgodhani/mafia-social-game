@@ -16,7 +16,7 @@ function PlayerCard({ player, isHost, canVote, onVote, revealRoles }) {
                 <p className="text-sm text-zinc-400">
                     {player.alive ? "Alive" : "Dead"}
                 </p>
-                {revealRoles && (
+                {player.role && (
                     <p className="text-sm text-yellow-400 font-semibold">
                         Role: {player.role}
                     </p>
