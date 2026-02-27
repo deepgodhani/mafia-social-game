@@ -3,323 +3,286 @@ import { useParams } from "react-router-dom";
 import socket from "../socket/socket";
 import { useRoomStore } from "../store/roomStore";
 import { usePlayerStore } from "../store/playerStore";
-import { useNavigate } from "react-router-dom";
-import PlayerCard from "../components/PlayerCard";
+
 import { useMicrophone } from "../hooks/useMicrophone";
 import { useWebRTC } from "../hooks/useWebRTC";
 
+import LobbyView from "../components/game/LobbyView";
+import NightView from "../components/game/NightView";
+import DayView from "../components/game/DayView";
+import VotingView from "../components/game/VotingView";
+import EndView from "../components/game/EndGameView";
+
+import PhaseWrapper from "../components/game/PhaseWrapper";
+import GameHUD from "../components/game/GameHUD";
+import PhaseTransition from "../components/game/PhaseTransition";
+import RoleReveal from "../components/game/RoleReveal";
+import MorningReport from "../components/game/MorningReport";
+
+
 function RoomPage() {
-    const { id } = useParams();
-    const { room, setRoom } = useRoomStore();
-    const { role, setRole } = usePlayerStore();
-    const [timer, setTimer] = useState(null);
-    const [mafiaTeam, setMafiaTeam] = useState([]);
+  const { id } = useParams();
 
-    const navigate = useNavigate();
+  const { room, setRoom } = useRoomStore();
+  const { role, setRole } = usePlayerStore();
 
-    const token = localStorage.getItem("token");
+  const [timer, setTimer] = useState(null);
 
-    const { stream, error, startMicrophone, audioRef, setMuted } = useMicrophone();
-    const { createPeer, getPeer } = useWebRTC();
+  const token = localStorage.getItem("token");
 
-    const canActAtNight =
-        room?.game?.phase === "NIGHT" &&
-        ["MAFIA", "DOCTOR", "DETECTIVE"].includes(role);
+  const { stream, startMicrophone, audioRef, setMuted } =
+    useMicrophone();
 
-    const myUserId = token
-        ? JSON.parse(atob(token.split(".")[1])).id
-        : null;
+  const { createPeer, getPeer } = useWebRTC();
 
-    useEffect(() => {
-        socket.emit("join-room", {
-            roomId: id,
+  const [showRoleReveal, setShowRoleReveal] = useState(false);
+
+  const [showMorningReport, setShowMorningReport] =
+    useState(false);
+
+
+  const [previousPhase, setPreviousPhase] = useState(null); 
+  const myUserId = token
+    ? JSON.parse(atob(token.split(".")[1])).id
+    : null;
+
+
+
+  // ========================
+  // ROOM + ROLE
+  // ========================
+  useEffect(() => {
+    socket.emit("join-room", { roomId: id });
+
+    socket.on("room-state", setRoom);
+
+    socket.on("your-role", ({ role }) => {
+      setRole(role);
+    });
+
+
+    return () => {
+      socket.off("room-state");
+      socket.off("your-role");
+    };
+  }, [id, setRoom, setRole]);
+
+  // ========================
+  // TIMER
+  // ========================
+  useEffect(() => {
+    if (room?.game?.timer?.remaining != null) {
+      setTimer(room.game.timer.remaining);
+    }
+  }, [room?.game?.timer?.remaining]);
+
+  useEffect(() => {
+    socket.on("timer-tick", ({ remaining }) => {
+      setTimer(remaining);
+    });
+
+    return () => socket.off("timer-tick");
+  }, []);
+
+  // ========================
+  // VOICE MUTE RULES
+  // ========================
+  useEffect(() => {
+    if (!room?.game?.phase || !role) return;
+
+    if (room.game.phase === "DAY") {
+      setMuted(false);
+    } else if (room.game.phase === "NIGHT") {
+      setMuted(role !== "MAFIA");
+    } else if (room.game.phase === "VOTING") {
+      setMuted(true);
+    }
+  }, [room?.game?.phase, role, setMuted]);
+
+  // ========================
+  // WEBRTC
+  // ========================
+  useEffect(() => {
+    socket.on("webrtc-offer", async ({ offer, fromUserId }) => {
+      const peer = createPeer(fromUserId, stream, (candidate) => {
+        socket.emit("webrtc-ice-candidate", {
+          roomId: id,
+          candidate,
+          targetUserId: fromUserId,
         });
+      });
 
+      await peer.setRemoteDescription(
+        new RTCSessionDescription(offer)
+      );
 
-        socket.on("room-state", (roomData) => {
-            console.log("ROOM UPDATE:", roomData);
-            setRoom(roomData);
-        });
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription(answer);
 
-        socket.on("your-role", ({ role }) => {
-            console.log("MY ROLE:", role);
-            setRole(role);
-        });
+      socket.emit("webrtc-answer", {
+        roomId: id,
+        answer,
+        targetUserId: fromUserId,
+      });
+    });
 
+    return () => socket.off("webrtc-offer");
+  }, [id, stream, createPeer]);
 
-        return () => {
-            socket.off("room-state");
-            socket.off("your-role");
-        };
+  useEffect(() => {
+    socket.on("webrtc-answer", async ({ answer, fromUserId }) => {
+      const peer = getPeer(fromUserId);
+      if (!peer) return;
 
-    }, [id, setRoom]);
+      await peer.setRemoteDescription(
+        new RTCSessionDescription(answer)
+      );
+    });
 
-    useEffect(() => {
-        if (room?.game?.timer?.remaining != null) {
-            setTimer(room.game.timer.remaining);
+    return () => socket.off("webrtc-answer");
+  }, [getPeer]);
+
+  useEffect(() => {
+    socket.on("webrtc-ice-candidate", async ({ candidate, fromUserId }) => {
+      const peer = getPeer(fromUserId);
+      if (!peer) return;
+
+      await peer.addIceCandidate(
+        new RTCIceCandidate(candidate)
+      );
+    });
+
+    return () => socket.off("webrtc-ice-candidate");
+  }, [getPeer]);
+
+  useEffect(() => {
+    if (room?.game?.phase === "STARTING") {
+      setShowRoleReveal(true);
+    }
+  }, [room?.game?.phase]);
+
+  // useEffect(() => {
+  //   if (
+  //     room?.game?.phase === "DAY" &&
+  //     room?.game?.lastNightResult
+  //   ) {
+  //     setShowMorningReport(true);
+  //   }
+  // }, [room?.game?.phase, room?.game?.lastNightResult]);
+
+  useEffect(() => {
+    if (!room?.game?.phase) return;
+  
+    // detect NIGHT -> DAY transition
+    if (
+      previousPhase === "NIGHT" &&
+      room.game.phase === "DAY" &&
+      room.game.lastNightResult
+    ) {
+      setShowMorningReport(true);
+    }
+  
+    setPreviousPhase(room.game.phase);
+  }, [room?.game?.phase]);
+
+  // ========================
+  // PHASE RENDER
+  // ========================
+  if (!room) return null;
+
+  const phase = room.game.phase;
+
+  let phaseContent = null;
+
+  if (phase === "LOBBY" || phase === "STARTING") {
+    phaseContent = (
+      <LobbyView
+        room={room}
+        myUserId={myUserId}
+        onStart={() =>
+          socket.emit("start-game", { roomId: id })
         }
-    }, [room?.game?.timer?.remaining]);
-
-    useEffect(() => {
-        socket.on("timer-tick", ({ remaining }) => {
-            setTimer(remaining);
-        });
-
-        return () => {
-            socket.off("timer-tick");
-        };
-    }, []);
-
-    useEffect(() => {
-        if (room?.game?.phase) {
-            console.log("PHASE CHANGED:", room.game.phase);
-        }
-    }, [room?.game?.phase]);
-
-
-    useEffect(() => {
-        socket.on("webrtc-offer", async ({ offer, fromUserId }) => {
-            console.log("[WEBRTC] OFFER RECEIVED");
-
-            const peer = createPeer(fromUserId, stream, (candidate) => {
-                socket.emit("webrtc-ice-candidate", {
-                    roomId: id,
-                    candidate,
-                    targetUserId: fromUserId,
-                });
-            });
-
-            await peer.setRemoteDescription(
-                new RTCSessionDescription(offer)
-            );
-
-            const answer = await peer.createAnswer();
-            await peer.setLocalDescription(answer);
-
-            socket.emit("webrtc-answer", {
-                roomId: id,
-                answer,
-                targetUserId: fromUserId,
-            });
-        });
-
-        return () => socket.off("webrtc-offer");
-    }, [id]);
-
-    useEffect(() => {
-        socket.on("webrtc-answer", async ({ answer, fromUserId }) => {
-            const peer = getPeer(fromUserId);
-            if (!peer) return;
-
-            console.log("[WEBRTC] ANSWER RECEIVED");
-
-            await peer.setRemoteDescription(
-                new RTCSessionDescription(answer)
-            );
-        });
-
-        return () => socket.off("webrtc-answer");
-    }, []);
-
-    useEffect(() => {
-        socket.on("webrtc-ice-candidate", async ({ candidate, fromUserId }) => {
-            const peer = getPeer(fromUserId);
-            if (!peer) return;
-
-            console.log("[WEBRTC] ICE RECEIVED");
-
-            await peer.addIceCandidate(
-                new RTCIceCandidate(candidate)
-            );
-        });
-
-        return () => socket.off("webrtc-ice-candidate");
-    }, []);
-
-    useEffect(() => {
-        if (!room?.game?.phase || !role) return;
-
-        // DAY → everyone talks
-        if (room.game.phase === "DAY") {
-            setMuted(false);
-        }
-
-        // NIGHT → only mafia talks
-        if (room.game.phase === "NIGHT") {
-            if (role === "MAFIA") {
-                setMuted(false);
-            } else {
-                setMuted(true);
-            }
-        }
-
-        // VOTING → everyone muted (optional)
-        if (room.game.phase === "VOTING") {
-            setMuted(true);
-        }
-
-    }, [room?.game?.phase, role]);
-
-
-    useEffect(() => {
-        socket.on("detective-result", (data) => {
-            alert(
-                `${data.targetName} is ${data.role}`
-            );
-        });
-
-        return () => socket.off("detective-result");
-    }, []);
-
-    useEffect(() => {
-        socket.on("mafia-team", (team) => {
-            console.log("[MAFIA TEAM]", team);
-            setMafiaTeam(team);
-        });
-
-        return () => socket.off("mafia-team");
-    }, []);
-
-    return (
-        <div className="min-h-screen bg-zinc-950 text-white p-6">
-            <button onClick={() => navigate("/")} className="mb-4 text-blue-400 underline">
-                &larr; Back to Home
-            </button>
-            <h1 className="text-2xl font-bold mb-4">Room: {id}</h1>
-            <div className="mb-4 p-3 bg-zinc-800 rounded-lg">
-                <p>Phase: {room?.game?.phase}</p>
-                <p>Round: {room?.game?.round}</p>
-                <p>Timer: {timer ?? room?.game?.timer?.remaining ?? "-"}</p>
-            </div>
-            {room?.game?.phase === "ENDED" && (
-                <div className="mt-4 p-4 bg-green-700 rounded-xl text-center">
-                    <p className="text-xl font-bold mb-3">
-                        {room?.game?.result === "CITIZENS_WIN"
-                            ? "Citizens Win!"
-                            : "Mafia Wins!"}
-                    </p>
-
-                    {room?.hostId === myUserId && (
-                        <button
-                            onClick={() =>
-                                socket.emit("play-again", { roomId: id })
-                            }
-                            className="bg-black px-4 py-2 rounded-lg"
-                        >
-                            Play Again
-                        </button>
-                    )}
-                </div>
-            )}
-
-            <div className="mb-4 p-3 bg-zinc-800 rounded-lg">
-                <p>My Role: {role || "Unknown"}</p>
-            </div>
-            {role === "MAFIA" && mafiaTeam.length > 0 && (
-                <div className="mb-4 p-3 bg-red-900 rounded-lg">
-                    <p className="font-bold mb-2">Your Mafia Team:</p>
-
-                    {mafiaTeam.map((m) => (
-                        <p key={m.userId}>{m.name}</p>
-                    ))}
-                </div>
-            )}
-            {room?.hostId === myUserId && !room?.game?.started && (
-                <button
-                    onClick={() => socket.emit("start-game", { roomId: id })}
-                    className="bg-green-600 px-4 py-2 rounded-lg mb-4"
-                >
-                    Start Game
-                </button>
-            )}
-            <h2 className="text-xl mb-2">Players:</h2>
-            {canActAtNight && (
-                <div className="mb-4 p-3 bg-zinc-800 rounded-lg">
-                    <p className="mb-2">Choose your night target:</p>
-
-                    {room?.players?.map((p) => (
-                        p.userId !== myUserId &&
-                        p.alive && (
-                            <button
-                                key={p.userId}
-                                onClick={() =>
-                                    socket.emit("night-action", {
-                                        roomId: id,
-                                        targetUserId: p.userId,
-                                    })
-                                }
-                                className="bg-red-600 px-3 py-2 rounded mr-2 mb-2"
-                            >
-                                {p.name}
-                            </button>
-                        )
-                    ))}
-                </div>
-            )}
-            {room?.players?.map((player) => (
-                <PlayerCard
-                    key={player.userId}
-                    player={player}
-                    isHost={room?.hostId === player.userId}
-                    canVote={
-                        room?.game?.phase === "VOTING" &&
-                        player.userId !== myUserId &&
-                        player.alive
-                    }
-                    revealRoles={room?.game?.phase === "ENDED"}
-                    onVote={() =>
-                        socket.emit("vote", {
-                            roomId: id,
-                            targetId: player.userId,
-                        })
-                    }
-                />
-            ))}
-            <button
-                onClick={startMicrophone}
-                className="bg-purple-600 px-4 py-2 rounded-lg mb-4"
-            >
-                Enable Voice
-            </button>
-            <audio ref={audioRef} autoPlay />
-            <button
-                onClick={async () => {
-                    const targets = room?.players?.filter(
-                        (p) => p.userId !== myUserId
-                    );
-
-                    if (!targets?.length) {
-                        console.log("[WEBRTC] No targets");
-                        return;
-                    }
-
-                    for (const target of targets) {
-                        const peer = createPeer(target.userId, stream, (candidate) => {
-                            socket.emit("webrtc-ice-candidate", {
-                                roomId: id,
-                                candidate,
-                                targetUserId: target.userId,
-                            });
-                        });
-
-                        const offer = await peer.createOffer();
-                        await peer.setLocalDescription(offer);
-
-                        socket.emit("webrtc-offer", {
-                            roomId: id,
-                            offer,
-                            targetUserId: target.userId,
-                        });
-
-                        console.log("[WEBRTC] OFFER SENT TO", target.userId);
-                    }
-                }}
-                className="bg-red-600 px-4 py-2 rounded-lg mb-4"
-            >
-                Create Offer
-            </button>
-        </div>
+      />
     );
+  } else if (phase === "NIGHT") {
+    phaseContent = (
+      <NightView
+        role={role}
+        timer={timer}
+        players={room.players}
+        myUserId={myUserId}
+        onNightAction={(targetUserId) =>
+          socket.emit("night-action", {
+            roomId: id,
+            targetUserId,
+          })
+        }
+      />
+    );
+  } else if (phase === "DAY") {
+    phaseContent = (
+      <DayView timer={timer} players={room.players} />
+    );
+  } else if (phase === "VOTING") {
+    phaseContent = (
+      <VotingView
+        timer={timer}
+        players={room.players}
+        myUserId={myUserId}
+        onVote={(targetId) =>
+          socket.emit("vote", {
+            roomId: id,
+            targetId,
+          })
+        }
+      />
+    );
+  } else if (phase === "ENDED") {
+    phaseContent = (
+      <EndView
+        result={room.game.result}
+        players={room.players}
+      />
+    );
+  }
+
+  // ========================
+  // FINAL RENDER
+  // ========================
+  return (
+    <div className="min-h-screen bg-zinc-950 text-white">
+      <GameHUD
+        phase={phase}
+        timer={timer}
+        role={role}
+        roomId={id}
+      />
+
+      <PhaseTransition phase={phase} />
+
+      {showRoleReveal &&
+        room?.game?.phase === "STARTING" &&
+        role && (
+          <RoleReveal
+            role={role}
+            onFinish={() => setShowRoleReveal(false)}
+          />
+        )}
+
+      {showMorningReport && (
+        <MorningReport
+          result={room.game.lastNightResult}
+          onFinish={() => setShowMorningReport(false)}
+        />
+      )}
+
+      <PhaseWrapper phase={phase}>
+        {phaseContent}
+      </PhaseWrapper>
+
+      <audio ref={audioRef} autoPlay />
+    </div>
+  );
 }
 
 export default RoomPage;

@@ -20,6 +20,7 @@ export function getPublicRoomState(room) {
         round: room.game.round,
         timer: room.game.timer,
         result: room.game.result,
+        lastNightResult: room.game.lastNightResult,
       },
     };
-  }
+  } 

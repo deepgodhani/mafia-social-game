@@ -1,18 +1,24 @@
 export function checkWinCondition(room) {
-    const alivePlayers = Object.values(room.players).filter(
-      (p) => p.alive
-    );
-  
-    const mafiaAlive = alivePlayers.filter(
-      (p) => p.role === "MAFIA"
-    ).length;
-  
-    const citizensAlive = alivePlayers.filter(
-      (p) => p.role === "CITIZEN"
-    ).length;
-  
-    if (mafiaAlive === 0) return "CITIZENS_WIN";
-    if (mafiaAlive >= citizensAlive) return "MAFIA_WIN";
-  
-    return null;
+  const players = Object.values(room.players);
+
+  const mafiaAlive = players.filter(
+    (p) => p.alive && p.role === "MAFIA"
+  ).length;
+
+  // ⭐ ALL NON-MAFIA = TOWN
+  const townAlive = players.filter(
+    (p) => p.alive && p.role !== "MAFIA"
+  ).length;
+
+  // ⭐ citizens win if mafia dead
+  if (mafiaAlive === 0) {
+    return "CITIZENS_WIN";
   }
+
+  // ⭐ mafia wins if equal or more than town
+  if (mafiaAlive >= townAlive) {
+    return "MAFIA_WIN";
+  }
+
+  return null;
+}

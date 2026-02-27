@@ -31,7 +31,7 @@ export function advancePhase(io, roomId, room, roomTimers) {
 
                 console.log(
                     `[ELIMINATED] ${room.players[eliminatedId].name} (${room.players[eliminatedId].role})`
-                  );
+                );
             }
 
             const result = checkWinCondition(room);
@@ -55,8 +55,24 @@ export function advancePhase(io, roomId, room, roomTimers) {
         }
 
         case PHASES.NIGHT:
+            room.game.lastNightResult = null;
+
             room.game.round += 1;
-            resolveNight(io, roomId, room);
+
+            // ⭐ resolve night actions
+            const killedPlayer = resolveNight(io, roomId, room);
+
+            // ⭐ save result for frontend newspaper
+            if (killedPlayer) {
+                room.game.lastNightResult = {
+                    type: "KILL",
+                    playerName: killedPlayer.name,
+                };
+            } else {
+                room.game.lastNightResult = {
+                    type: "NO_KILL",
+                };
+            }
             changePhase(io, roomId, room, PHASES.DAY);
             startPhaseTimer(io, roomId, room, 15, roomTimers);
             break;
