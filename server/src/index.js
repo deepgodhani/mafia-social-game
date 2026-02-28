@@ -67,6 +67,10 @@ const allowedOrigins = [
 
 const disconnectTimers = {};
 
+app.get("/health", (req, res) => {
+    res.json({ status: "ok" });
+});
+
 app.post("/profile/setup", (req, res) => {
   const auth = req.headers.authorization;
 
