@@ -52,8 +52,11 @@ const PLAYER_COLORS = [
 const app = express();
 const roomTimers = {};
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173"
+}));
 app.use(express.json());
+
 
 const disconnectTimers = {};
 
