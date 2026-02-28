@@ -31,7 +31,7 @@ function PhaseTransition({ phase }) {
 
     const timer = setTimeout(() => {
       setVisible(false);
-    }, 2200);
+    }, 1200);
 
     return () => clearTimeout(timer);
   }, [phase]);
@@ -39,10 +39,12 @@ function PhaseTransition({ phase }) {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
-      <h1 className="text-3xl md:text-5xl font-bold text-white animate-pulse">
-        {getPhaseText(phase)}
-      </h1>
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center">
+      <div className="panel px-6 py-4 text-center animate-fadeIn">
+        <h1 className="text-2xl md:text-4xl font-bold text-amber-200 tracking-wide">
+          {getPhaseText(phase)}
+        </h1>
+      </div>
     </div>
   );
 }

@@ -1,25 +1,51 @@
 function VotingView({ players, myUserId, onVote, timer }) {
-    return (
-      <div className="min-h-screen bg-zinc-900 text-white p-6">
-  
-        <h1 className="text-3xl font-bold mb-4">🗳 Voting Phase</h1>
-        <p className="mb-6">Timer: {timer}</p>
-  
-        <div className="space-y-3">
-          {players
-            .filter(p => p.alive && p.userId !== myUserId)
-            .map(p => (
-              <button
-                key={p.userId}
-                onClick={() => onVote(p.userId)}
-                className="w-full bg-red-600 hover:bg-red-700 p-3 rounded-lg text-left"
-              >
-                Vote {p.name}
-              </button>
-            ))}
+  return (
+    <div className="game-shell pt-4 space-y-4 text-amber-50">
+
+      <div className="panel p-4 text-center">
+        <div className="panel-header">Town Decision</div>
+
+        <h1 className="phase-title mt-1">
+          Voting Phase
+        </h1>
+
+        <p className="text-sm text-amber-700 mt-2">
+          Choose carefully. Every vote matters.
+        </p>
+
+        <div className="mt-3 text-lg font-bold text-amber-200 tabular-nums">
+          {timer}s
         </div>
       </div>
-    );
-  }
-  
-  export default VotingView;
+
+      <div className="space-y-3">
+        {players
+          .filter(p => p.alive && p.userId !== myUserId)
+          .map(p => (
+            <button
+              key={p.userId}
+              onClick={() => onVote(p.userId)}
+              className="
+                    w-full panel p-3 text-left
+                    border border-amber-900/30
+                    hover:border-red-700/50
+                    active:scale-[0.98]
+                    transition-all duration-150
+                  "
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-amber-100">
+                  {p.name}
+                </span>
+                <span className="text-xs uppercase tracking-widest text-red-500">
+                  Vote
+                </span>
+              </div>
+            </button>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+export default VotingView;

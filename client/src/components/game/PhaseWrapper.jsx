@@ -1,23 +1,26 @@
 import { motion, AnimatePresence } from "framer-motion";
 
 const phaseStyles = {
-  LOBBY: "bg-zinc-950",
-  NIGHT: "bg-black",
-  DAY: "bg-zinc-900",
-  VOTING: "bg-red-950",
-  ENDED: "bg-zinc-950",
+  LOBBY: "bg-gradient-to-b from-black via-zinc-950 to-black",
+  NIGHT: "bg-gradient-to-b from-black via-zinc-950 to-black",
+  DAY: "bg-gradient-to-b from-zinc-900 via-zinc-950 to-black",
+  VOTING: "bg-gradient-to-b from-black via-red-950/40 to-black",
+  ENDED: "bg-gradient-to-b from-black via-zinc-900 to-black",
 };
-
 function PhaseWrapper({ phase, children }) {
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" >
       <motion.div
         key={phase}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.6 }}
-        className={`min-h-screen text-white transition-colors duration-700 ${phaseStyles[phase]}`}
+        initial={{ opacity: 0, y: 6 }}
+animate={{ opacity: 1, y: 0 }}
+exit={{ opacity: 0, y: -6 }}
+transition={{ duration: 0.35 }}
+        className={`
+          min-h-screen text-amber-50
+          transition-colors duration-700
+          ${phaseStyles[phase]}
+        `}
       >
         {children}
       </motion.div>

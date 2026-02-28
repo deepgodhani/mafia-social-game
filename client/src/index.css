@@ -1,3 +1,48 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* =========================
+   NOIR DESIGN SYSTEM (V1)
+========================= */
+
+@layer components {
+
+    .game-shell {
+      @apply max-w-md mx-auto px-3 sm:px-4 pb-24;
+    }
+  
+    .panel {
+      @apply rounded-2xl border border-amber-900/30
+             bg-zinc-950/80 backdrop-blur-md
+             shadow-[0_0_40px_rgba(0,0,0,0.6)];
+    }
+  
+    .panel-header {
+      @apply text-[11px] uppercase tracking-[0.2em]
+             text-amber-700 font-semibold;
+    }
+  
+    .phase-title {
+      @apply text-lg font-bold uppercase tracking-wide
+             text-amber-100;
+    }
+  
+    .pill {
+      @apply rounded-full px-3 py-1 text-xs
+             bg-amber-900/40 text-amber-200
+             border border-amber-700/30;
+    }
+  
+    .btn-primary {
+      @apply w-full rounded-2xl py-3 px-4
+             bg-amber-700 text-black font-bold
+             active:scale-95 transition-transform;
+    }
+  
+    .btn-danger {
+      @apply w-full rounded-2xl py-3 px-4
+             bg-red-800 text-red-100 font-bold
+             active:scale-95 transition-transform;
+    }
+  }

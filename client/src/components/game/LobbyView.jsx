@@ -3,32 +3,34 @@ function LobbyView({ room, myUserId, onStart }) {
   const isHost = room?.hostId === myUserId;
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center p-6">
+    <div className="game-shell pt-6 space-y-6 text-amber-50">
 
       {/* ROOM CODE */}
-      <h1 className="text-zinc-400 text-sm tracking-widest mb-2">
-        ROOM CODE
-      </h1>
+      <div className="panel p-5 text-center">
+        <div className="panel-header">Room Code</div>
 
-      <div className="text-5xl font-bold tracking-[0.5em] mb-8">
-        {room?.id}
+        <div className="text-4xl font-bold tracking-[0.35em] mt-2 text-amber-200">
+          {room?.id}
+        </div>
       </div>
-      {room.hostId === myUserId ? (
-        <p className="text-zinc-300">
-          Waiting for players...
-        </p>
-      ) : (
-        <p className="text-zinc-400">
-          Waiting for host to start the game...
-        </p>
-      )}
+      <div className="panel p-3 text-center">
+        {room.hostId === myUserId ? (
+          <p className="text-amber-300 text-sm">
+            Waiting for players to join...
+          </p>
+        ) : (
+          <p className="text-amber-700 text-sm">
+            Waiting for host to start the game...
+          </p>
+        )}
+      </div>
       {/* PLAYER GRID */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full max-w-4xl">
+      <div className="grid grid-cols-2 gap-3">
 
         {players.map((player) => (
           <div
             key={player.userId}
-            className="bg-zinc-800 rounded-2xl p-4 flex flex-col items-center border border-zinc-700"
+            className="panel p-3 flex flex-col items-center"
           >
             <img
               src={player.picture}
@@ -41,8 +43,8 @@ function LobbyView({ room, myUserId, onStart }) {
             </p>
 
             {room.hostId === player.userId && (
-              <span className="text-xs bg-yellow-600 px-2 py-1 rounded mt-2">
-                👑 HOST
+              <span className="pill mt-2 text-[10px]">
+                HOST
               </span>
             )}
           </div>
@@ -54,8 +56,7 @@ function LobbyView({ room, myUserId, onStart }) {
         <div className="mt-10">
           <button
             onClick={onStart}
-            className="bg-green-600 hover:bg-green-700 px-8 py-3 rounded-xl text-lg font-semibold"
-          >
+            className="btn-primary px-8"          >
             Start Game
           </button>
         </div>

@@ -18,6 +18,7 @@ import GameHUD from "../components/game/GameHUD";
 import PhaseTransition from "../components/game/PhaseTransition";
 import RoleReveal from "../components/game/RoleReveal";
 import MorningReport from "../components/game/MorningReport";
+import PlayerFooter from "../components/game/PlayerFooter";
 
 
 function RoomPage() {
@@ -41,7 +42,7 @@ function RoomPage() {
     useState(false);
 
 
-  const [previousPhase, setPreviousPhase] = useState(null); 
+  const [previousPhase, setPreviousPhase] = useState(null);
   const myUserId = token
     ? JSON.parse(atob(token.split(".")[1])).id
     : null;
@@ -172,7 +173,7 @@ function RoomPage() {
 
   useEffect(() => {
     if (!room?.game?.phase) return;
-  
+
     // detect NIGHT -> DAY transition
     if (
       previousPhase === "NIGHT" &&
@@ -181,7 +182,7 @@ function RoomPage() {
     ) {
       setShowMorningReport(true);
     }
-  
+
     setPreviousPhase(room.game.phase);
   }, [room?.game?.phase]);
 
@@ -191,6 +192,7 @@ function RoomPage() {
   if (!room) return null;
 
   const phase = room.game.phase;
+  const me = room.players.find(p => p.userId === myUserId);
 
   let phaseContent = null;
 
@@ -250,7 +252,7 @@ function RoomPage() {
   // FINAL RENDER
   // ========================
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-black text-amber-50 flex flex-col">
       <GameHUD
         phase={phase}
         timer={timer}
@@ -276,10 +278,12 @@ function RoomPage() {
         />
       )}
 
-      <PhaseWrapper phase={phase}>
-        {phaseContent}
-      </PhaseWrapper>
-
+      <div className="flex-1">
+        <PhaseWrapper phase={phase}>
+          {phaseContent}
+        </PhaseWrapper>
+      </div>
+      <PlayerFooter role={role} roomId={id} me={me} />
       <audio ref={audioRef} autoPlay />
     </div>
   );

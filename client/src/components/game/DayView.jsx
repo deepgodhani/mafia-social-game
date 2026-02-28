@@ -1,26 +1,40 @@
 function DayView({ timer, players }) {
-    return (
-      <div className="min-h-screen bg-zinc-100 text-black p-6">
-  
-        <h1 className="text-3xl font-bold mb-2">☀️ Day Phase</h1>
-        <p className="mb-6">Discuss and find the Mafia.</p>
-  
-        <p className="mb-6">Timer: {timer}</p>
-  
-        <div className="space-y-3">
-          {players.map(p => (
-            <div
-              key={p.userId}
-              className={`p-3 rounded-lg border ${
-                p.alive ? "bg-white" : "bg-zinc-300 line-through"
-              }`}
-            >
-              {p.name}
-            </div>
-          ))}
+  return (
+    <div className="game-shell pt-4 space-y-4 text-amber-50">
+
+      <div className="panel p-4 text-center">
+        <div className="panel-header">Morning Report</div>
+
+        <h1 className="phase-title mt-1">
+          Day Phase
+        </h1>
+
+        <p className="text-sm text-amber-700 mt-2">
+          Discuss, observe, and decide who to trust.
+        </p>
+
+        <div className="mt-3 text-lg font-bold text-amber-200 tabular-nums">
+          {timer}s
         </div>
       </div>
-    );
-  }
-  
-  export default DayView;
+
+      <div className="space-y-2">
+        {players.map(p => (
+          <div
+            key={p.userId}
+            className={`
+              panel p-3 transition-all
+              ${p.alive
+                ? "text-amber-100"
+                : "opacity-50 line-through text-amber-700"}
+            `}
+          >
+            {p.name}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default DayView;
