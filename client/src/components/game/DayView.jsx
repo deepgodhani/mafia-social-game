@@ -1,4 +1,6 @@
-function DayView({ timer, players }) {
+import PlayerBoard from "./PlayerBoard";
+
+function DayView({ timer, players , onShowMorningReport}) {
   return (
     <div className="game-shell pt-4 space-y-4 text-amber-50">
 
@@ -18,21 +20,19 @@ function DayView({ timer, players }) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        {players.map(p => (
-          <div
-            key={p.userId}
-            className={`
-              panel p-3 transition-all
-              ${p.alive
-                ? "text-amber-100"
-                : "opacity-50 line-through text-amber-700"}
-            `}
-          >
-            {p.name}
-          </div>
-        ))}
-      </div>
+      <div className="flex justify-center">
+  <button
+    onClick={onShowMorningReport}
+    className="pill hover:border-amber-500 transition"
+  >
+    View Last Night
+  </button>
+</div>
+
+      <PlayerBoard
+        players={players}
+        selectable={false}
+      />
     </div>
   );
 }

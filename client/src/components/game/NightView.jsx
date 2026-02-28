@@ -1,3 +1,5 @@
+import PlayerBoard from "./PlayerBoard";
+
 function NightView({ role, timer, players, myUserId, onNightAction }) {
   const canAct = ["MAFIA", "DOCTOR", "DETECTIVE"].includes(role);
 
@@ -26,26 +28,14 @@ function NightView({ role, timer, players, myUserId, onNightAction }) {
             Choose your target
           </p>
 
-          <div className="grid grid-cols-2 gap-3">
-            {players
-              .filter(p => p.userId !== myUserId && p.alive)
-              .map(p => (
-                <button
-                  key={p.userId}
-                  onClick={() => onNightAction(p.userId)}
-                  className="
-  panel w-full py-3 px-4
-  text-amber-100 font-semibold
-  border border-amber-900/30
-  hover:border-amber-600/40
-  active:scale-[0.98]
-  transition-all duration-150
-"
-                >
-                  {p.name}
-                </button>
-              ))}
-          </div>
+          <PlayerBoard
+  players={players.filter(
+    (p) => p.userId !== myUserId && p.alive
+  )}
+  myUserId={myUserId}
+  selectable={canAct}
+  onSelect={onNightAction}
+/>
         </>
       ) : (
         <p className="text-zinc-500 mt-8">

@@ -1,44 +1,51 @@
-function PlayerCard({ player, isHost, canVote, onVote, revealRoles }) {
+function PlayerCard({
+    player,
+    isHost,
+    selected,
+    clickable,
+    onClick,
+    showRole,
+  }) {
     return (
-        <div className="bg-zinc-800 rounded-2xl p-4 flex items-center gap-4 shadow-lg border border-zinc-700">
-
-            {/* Avatar */}
-            <img
-                src={player.picture}
-                alt={player.name}
-                className="w-14 h-14 rounded-full object-cover"
-            />
-
-            {/* Info */}
-            <div className="flex-1">
-                <p className="text-lg font-semibold">{player.name}</p>
-
-                <p className="text-sm text-zinc-400">
-                    {player.alive ? "Alive" : "Dead"}
-                </p>
-                {player.role && (
-                    <p className="text-sm text-yellow-400 font-semibold">
-                        Role: {player.role}
-                    </p>
-                )}
-            </div>
-
-            {/* Host badge */}
-            {isHost && (
-                <span className="text-xs bg-yellow-600 px-2 py-1 rounded-lg">
-                    HOST
-                </span>
-            )}
-            {canVote && player.alive && (
-                <button
-                    onClick={onVote}
-                    className="mt-2 bg-red-600 hover:bg-red-700 px-3 py-1 rounded-lg text-sm"
-                >
-                    Vote
-                </button>
-            )}
+      <div
+        onClick={clickable ? onClick : undefined}
+        className={`
+          panel p-3 flex items-center gap-3
+          transition-all duration-150
+          ${clickable ? "cursor-pointer active:scale-[0.98]" : ""}
+          ${selected ? "ring-2 ring-amber-500" : ""}
+          ${!player.alive ? "opacity-50" : ""}
+        `}
+      >
+        <img
+          src={player.picture}
+          alt={player.name}
+          className="w-12 h-12 rounded-full object-cover border border-amber-900/30"
+        />
+  
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-amber-100 truncate">
+            {player.name}
+          </p>
+  
+          <p className="text-xs text-amber-700 uppercase tracking-widest">
+            {player.alive ? "Alive" : "Dead"}
+          </p>
+  
+          {showRole && player.role && (
+            <p className="text-xs text-amber-400 mt-1">
+              {player.role}
+            </p>
+          )}
         </div>
+  
+        {isHost && (
+          <span className="pill text-[10px]">
+            HOST
+          </span>
+        )}
+      </div>
     );
-}
-
-export default PlayerCard;
+  }
+  
+  export default PlayerCard;

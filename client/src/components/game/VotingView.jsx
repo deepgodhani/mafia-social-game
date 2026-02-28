@@ -1,3 +1,6 @@
+import PlayerBoard from "./PlayerBoard";
+
+
 function VotingView({ players, myUserId, onVote, timer }) {
   return (
     <div className="game-shell pt-4 space-y-4 text-amber-50">
@@ -18,32 +21,14 @@ function VotingView({ players, myUserId, onVote, timer }) {
         </div>
       </div>
 
-      <div className="space-y-3">
-        {players
-          .filter(p => p.alive && p.userId !== myUserId)
-          .map(p => (
-            <button
-              key={p.userId}
-              onClick={() => onVote(p.userId)}
-              className="
-                    w-full panel p-3 text-left
-                    border border-amber-900/30
-                    hover:border-red-700/50
-                    active:scale-[0.98]
-                    transition-all duration-150
-                  "
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-amber-100">
-                  {p.name}
-                </span>
-                <span className="text-xs uppercase tracking-widest text-red-500">
-                  Vote
-                </span>
-              </div>
-            </button>
-          ))}
-      </div>
+      <PlayerBoard
+  players={players.filter(
+    (p) => p.alive && p.userId !== myUserId
+  )}
+  myUserId={myUserId}
+  selectable={true}
+  onSelect={onVote}
+/>
     </div>
   );
 }

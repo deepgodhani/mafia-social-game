@@ -19,6 +19,7 @@ import PhaseTransition from "../components/game/PhaseTransition";
 import RoleReveal from "../components/game/RoleReveal";
 import MorningReport from "../components/game/MorningReport";
 import PlayerFooter from "../components/game/PlayerFooter";
+import VoteReveal from "../components/game/VoteReveal";
 
 
 function RoomPage() {
@@ -46,6 +47,8 @@ function RoomPage() {
   const myUserId = token
     ? JSON.parse(atob(token.split(".")[1])).id
     : null;
+
+    const [showVoteReveal, setShowVoteReveal] = useState(false);
 
 
 
@@ -183,6 +186,13 @@ function RoomPage() {
       setShowMorningReport(true);
     }
 
+    if (
+      previousPhase === "VOTING" &&
+      room.game.phase !== "VOTING"
+    ) {
+      setShowVoteReveal(true);
+    }
+
     setPreviousPhase(room.game.phase);
   }, [room?.game?.phase]);
 
@@ -223,7 +233,11 @@ function RoomPage() {
     );
   } else if (phase === "DAY") {
     phaseContent = (
-      <DayView timer={timer} players={room.players} />
+      <DayView
+        timer={timer}
+        players={room.players}
+        onShowMorningReport={() => setShowMorningReport(true)}
+      />
     );
   } else if (phase === "VOTING") {
     phaseContent = (
@@ -277,6 +291,13 @@ function RoomPage() {
           onFinish={() => setShowMorningReport(false)}
         />
       )}
+
+{showVoteReveal && (
+  <VoteReveal
+    votes={room.game?.lastVotes || []}
+    onFinish={() => setShowVoteReveal(false)}
+  />
+)}
 
       <div className="flex-1">
         <PhaseWrapper phase={phase}>
