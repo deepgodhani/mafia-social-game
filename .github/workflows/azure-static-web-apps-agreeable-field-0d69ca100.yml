@@ -32,7 +32,7 @@ jobs:
           api_location: "" # Api source code path - optional
           output_location: "dist" # Built app content directory - optional
         env:
-          VITE_SERVER_URL: https://mafia-server-deep.azurewebsites.net
+          VITE_SERVER_URL: https://mafia-server-deep-buavhzawc6cqd2ar.centralindia-01.azurewebsites.net
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
@@ -46,4 +46,5 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AGREEABLE_FIELD_0D69CA100 }}
           action: "close"
+
 
