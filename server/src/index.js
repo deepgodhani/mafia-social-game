@@ -52,10 +52,17 @@ const PLAYER_COLORS = [
 const app = express();
 const roomTimers = {};
 
-app.use(cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173"
-}));
-app.use(express.json());
+const allowedOrigins = [
+    "http://localhost:5173", 
+    "https://mafia.deepgodhani.me"
+  ];
+  
+  app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+  }));
+  app.use(express.json());
+
 
 
 const disconnectTimers = {};
@@ -135,10 +142,18 @@ app.get("/", (req, res) => {
 const httpServer = createServer(app);
 
 // Attach Socket.IO
+// const io = new Server(httpServer, {
+//     cors: {
+//         origin: process.env.CLIENT_URL || "http://localhost:5173",
+//         methods: ["GET", "POST"],
+//     },
+// });
+
 const io = new Server(httpServer, {
     cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:5173",
+        origin: allowedOrigins,
         methods: ["GET", "POST"],
+        credentials: true
     },
 });
 
