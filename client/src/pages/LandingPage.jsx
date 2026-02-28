@@ -24,7 +24,8 @@ function LandingPage() {
 
       <GoogleLogin
         onSuccess={async (credentialResponse) => {
-          const res = await fetch("http://localhost:3000/auth/google", {
+          const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
+          const res = await fetch(`${SERVER_URL}/auth/google`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
