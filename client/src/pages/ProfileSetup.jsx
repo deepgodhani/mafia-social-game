@@ -41,7 +41,9 @@ function ProfileSetup() {
       return;
     }
 
-    const res = await fetch("http://localhost:3000/profile/setup", {
+    const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000"; 
+
+    const res = await fetch(`${SERVER_URL}/profile/setup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
