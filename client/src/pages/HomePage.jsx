@@ -1,11 +1,34 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import socket from "../socket/socket";
-import { GoogleLogin } from "@react-oauth/google";
+import RulebookPanel from "../components/RulebookPanel";
 
 function HomePage() {
   const navigate = useNavigate();
   const [roomCode, setRoomCode] = useState("");
+  const [userLabel, setUserLabel] = useState("");
+  const [showRulebook, setShowRulebook] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      setUserLabel(payload.email || payload.name || "Player");
+    } catch {
+      setUserLabel("Player");
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
 
   const handleCreateRoom = () => {
     socket.emit("create-room");
@@ -18,9 +41,6 @@ function HomePage() {
 
   useEffect(() => {
     socket.on("room-created", ({ roomId }) => {
-      console.log("Room created:", roomId);
-
-      // ⭐ navigate using URL
       navigate(`/room/${roomId}`);
     });
 
@@ -30,78 +50,95 @@ function HomePage() {
   }, [navigate]);
 
   return (
-    <div className="h-screen bg-zinc-950 text-white flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-black text-amber-100 flex flex-col">
+      {/* Top navigation */}
+      <header className="border-b border-amber-900/40 bg-black/80 backdrop-blur-md">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-bold tracking-widest">
+              MAFIA
+            </span>
+            <span className="text-[10px] text-amber-700 uppercase tracking-[0.2em]">
+              Noir 
+            </span>
+          </div>
 
-      {/* <GoogleLogin
-        onSuccess={async (credentialResponse) => {
-          const res = await fetch("http://localhost:3000/auth/google", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              credential: credentialResponse.credential,
-            }),
-          });
-        
-          const data = await res.json();
-          console.log("BACKEND USER:", data);
-        }}
-        onError={() => {
-          console.log("Login Failed");
-        }}
-      /> */}
+          <div className="flex items-center gap-3 text-sm">
+            <button
+              className="pill text-xs"
+              onClick={() => setShowRulebook(true)}
+            >
+              Rulebook
+            </button>
 
-      {/* <GoogleLogin
-  onSuccess={(res) => console.log("GOOGLE TOKEN:", res)}
-  onError={() => console.log("FAILED")}
-/> */}
+            <button
+              className="pill text-xs"
+              onClick={() => navigate("/profile-setup")}
+            >
+              Profile
+            </button>
 
-      <GoogleLogin
-        onSuccess={async (credentialResponse) => {
-          //console.log("GOOGLE TOKEN:", credentialResponse);
-          const res = await fetch("http://localhost:3000/auth/google", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              credential: credentialResponse.credential,
-            }),
-          });
+            <div className="h-4 w-px bg-amber-900/40" />
 
-          const data = await res.json();
-          localStorage.setItem("token", data.token);
+            <span className="text-xs text-amber-500 max-w-[120px] truncate">
+              {userLabel}
+            </span>
 
-          console.log("JWT SAVED:", data.token);
-          console.log("BACKEND USER:", data);
-        }}
-        onError={() => console.log("FAILED")}
-      />
+            <button
+              onClick={handleLogout}
+              className="text-xs text-amber-400 hover:text-red-400 transition"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
 
-      <button
-        onClick={handleCreateRoom}
-        className="bg-green-600 px-6 py-3 rounded-xl"
-      >
-        Create Room
-      </button>
+      {/* Main content */}
+      <main className="flex-1 flex items-center justify-center">
+        <div className="max-w-md w-full px-4 space-y-6">
+          <div className="panel p-5 text-center space-y-2">
+            <div className="panel-header">Central Station</div>
+            <p className="text-sm text-amber-700">
+              Create a new room for your crew or join an existing code.
+            </p>
+          </div>
 
-      <input
-        value={roomCode}
-        onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-        placeholder="Enter room code"
-        className="px-4 py-2 rounded text-black"
-      />
+          <div className="space-y-3">
+            <button
+              onClick={handleCreateRoom}
+              className="btn-primary w-full py-3"
+            >
+              Create Room
+            </button>
 
-      <button
-        onClick={handleJoinRoom}
-        className="bg-blue-600 px-6 py-3 rounded-xl"
-      >
-        Join Room
-      </button>
+            <div className="panel p-3 flex gap-2 items-center">
+              <input
+                value={roomCode}
+                onChange={(e) =>
+                  setRoomCode(e.target.value.toUpperCase())
+                }
+                placeholder="Enter room code"
+                className="flex-1 px-3 py-2 rounded bg-zinc-900 text-amber-50 placeholder:text-amber-700 text-sm"
+              />
 
+              <button
+                onClick={handleJoinRoom}
+                className="btn-secondary px-4 py-2 text-sm"
+              >
+                Join
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {showRulebook && (
+        <RulebookPanel onClose={() => setShowRulebook(false)} />
+      )}
     </div>
   );
 }
 
 export default HomePage;
+

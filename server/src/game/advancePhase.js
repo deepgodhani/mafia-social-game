@@ -12,16 +12,29 @@ export function advancePhase(io, roomId, room, roomTimers) {
     switch (current) {
 
         case PHASES.STARTING:
-            changePhase(io, roomId, room, PHASES.DAY);
-            startPhaseTimer(io, roomId, room, 15, roomTimers);
-            break;
-
-        case PHASES.DAY:
-            changePhase(io, roomId, room, PHASES.VOTING);
+            changePhase(io, roomId, room, PHASES.NIGHT);
             startPhaseTimer(io, roomId, room, 10, roomTimers);
             break;
 
+        case PHASES.DAY_RESULT:
+            changePhase(io, roomId, room, PHASES.DISCUSSION);
+            startPhaseTimer(io, roomId, room, 240, roomTimers); // 4 min discussion
+            break;
+
+        case PHASES.DISCUSSION:
+            changePhase(io, roomId, room, PHASES.VOTING);
+            startPhaseTimer(io, roomId, room, 20, roomTimers); // 20 sec vote
+            break;
+
         case PHASES.VOTING: {
+
+            // ⭐ snapshot votes for frontend reveal
+            room.game.lastVotes = Object.entries(room.game.votes || {}).map(
+                ([voterId, targetId]) => ({
+                    voterId,
+                    targetId,
+                })
+            );
 
             // ⭐ resolve voting
             const eliminatedId = resolveVotes(room);
@@ -37,7 +50,7 @@ export function advancePhase(io, roomId, room, roomTimers) {
             const result = checkWinCondition(room);
 
             if (result) {
-                room.game.phase = "ENDED";
+                changePhase(io, roomId, room, PHASES.END_GAME);
                 room.game.result = result;
 
                 console.log("[GAME ENDED]", result);
@@ -48,11 +61,20 @@ export function advancePhase(io, roomId, room, roomTimers) {
             // clear votes for next round
             room.game.votes = {};
 
-            changePhase(io, roomId, room, PHASES.NIGHT);
-            startPhaseTimer(io, roomId, room, 10, roomTimers);
+            room.game.lastEliminated = eliminatedId || null;
+
+            changePhase(io, roomId, room, PHASES.ELIMINATION);
+            startPhaseTimer(io, roomId, room, 8, roomTimers);
 
             break;
         }
+
+        case PHASES.ELIMINATION:
+            room.game.votes = {};
+
+            changePhase(io, roomId, room, PHASES.NIGHT);
+            startPhaseTimer(io, roomId, room, 90, roomTimers); // 1.5 min night
+            break;
 
         case PHASES.NIGHT:
             room.game.lastNightResult = null;
@@ -73,8 +95,9 @@ export function advancePhase(io, roomId, room, roomTimers) {
                     type: "NO_KILL",
                 };
             }
-            changePhase(io, roomId, room, PHASES.DAY);
-            startPhaseTimer(io, roomId, room, 15, roomTimers);
+            changePhase(io, roomId, room, PHASES.DAY_RESULT);
+            // show night result card for ~7 seconds before discussion
+            startPhaseTimer(io, roomId, room, 7, roomTimers);
             break;
 
         default:

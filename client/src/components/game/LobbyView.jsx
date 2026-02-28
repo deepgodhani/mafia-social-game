@@ -4,7 +4,6 @@ function LobbyView({ room, myUserId, onStart }) {
 
   return (
     <div className="game-shell pt-6 space-y-6 text-amber-50">
-
       {/* ROOM CODE */}
       <div className="panel p-5 text-center">
         <div className="panel-header">Room Code</div>
@@ -13,6 +12,7 @@ function LobbyView({ room, myUserId, onStart }) {
           {room?.id}
         </div>
       </div>
+
       <div className="panel p-3 text-center">
         {room.hostId === myUserId ? (
           <p className="text-amber-300 text-sm">
@@ -24,22 +24,28 @@ function LobbyView({ room, myUserId, onStart }) {
           </p>
         )}
       </div>
+
       {/* PLAYER GRID */}
       <div className="grid grid-cols-2 gap-3">
-
         {players.map((player) => (
           <div
             key={player.userId}
             className="panel p-3 flex flex-col items-center"
           >
-            <img
-              src={player.picture}
-              alt={player.name}
-              className="w-16 h-16 rounded-full object-cover mb-2"
-            />
+            <div
+              className="w-16 h-16 rounded-full mb-2 border border-amber-900/40 flex items-center justify-center overflow-hidden"
+              style={{ backgroundColor: player.color || "#1f2933" }}
+              title={player.username ? `@${player.username}` : player.name}
+            >
+              <img
+                src={player.picture}
+                alt={player.name}
+                className="w-14 h-14 rounded-full object-cover"
+              />
+            </div>
 
             <p className="text-sm font-semibold text-center">
-              {player.name}
+              {player.displayName || player.name}
             </p>
 
             {room.hostId === player.userId && (
@@ -54,9 +60,7 @@ function LobbyView({ room, myUserId, onStart }) {
       {/* HOST CONTROLS */}
       {isHost && (
         <div className="mt-10">
-          <button
-            onClick={onStart}
-            className="btn-primary px-8"          >
+          <button onClick={onStart} className="btn-primary px-8">
             Start Game
           </button>
         </div>

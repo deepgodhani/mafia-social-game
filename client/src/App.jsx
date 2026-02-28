@@ -3,6 +3,8 @@ import socket from "./socket/socket";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import RoomPage from "./pages/RoomPage";
+import LandingPage from "./pages/LandingPage";
+import ProfileSetup from "./pages/ProfileSetup";
 
 function App() {
   useEffect(() => {
@@ -23,7 +25,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/profile-setup" element={<ProfileSetup />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/room/:id" element={<RoomPage />} />
       </Routes>
     </BrowserRouter>

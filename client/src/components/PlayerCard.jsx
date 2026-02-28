@@ -17,15 +17,21 @@ function PlayerCard({
           ${!player.alive ? "opacity-50" : ""}
         `}
       >
-        <img
-          src={player.picture}
-          alt={player.name}
-          className="w-12 h-12 rounded-full object-cover border border-amber-900/30"
-        />
+        <div
+          className="w-12 h-12 rounded-full border border-amber-900/40 flex items-center justify-center overflow-hidden"
+          style={{ backgroundColor: player.color || "#1f2933" }}
+          title={player.username ? `@${player.username}` : player.name}
+        >
+          <img
+            src={player.picture}
+            alt={player.name}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        </div>
   
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-amber-100 truncate">
-            {player.name}
+            {player.displayName || player.name}
           </p>
   
           <p className="text-xs text-amber-700 uppercase tracking-widest">

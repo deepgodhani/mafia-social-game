@@ -36,11 +36,27 @@ export function useMicrophone() {
     console.log("[VOICE] muted:", muted);
   };
 
+  const stopMicrophone = () => {
+    if (!stream) return;
+
+    stream.getTracks().forEach((track) => {
+      track.stop();
+    });
+
+    if (audioRef.current) {
+      audioRef.current.srcObject = null;
+    }
+
+    setStream(null);
+    console.log("[MIC] Stopped");
+  };
+
   return {
     stream,
     error,
     startMicrophone,
     audioRef,
     setMuted,
+    stopMicrophone,
   };
 }

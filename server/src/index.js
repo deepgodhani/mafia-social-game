@@ -19,6 +19,35 @@ import { createToken } from "./auth/createToken.js";
 import { verifyToken } from "./auth/verifyToken.js";
 import { sendMafiaTeam } from "./game/sendMafiaTeam.js";
 import { resetGame } from "./game/resetGame.js";
+import {
+  users,
+  getOrCreateUserFromGoogle,
+  getOrCreateUserFromToken,
+  isUsernameTaken,
+} from "./auth/userStore.js";
+
+const PLAYER_COLORS = [
+  "#f97316", // orange
+  "#22c55e", // green
+  "#3b82f6", // blue
+  "#e11d48", // rose
+  "#a855f7", // violet
+  "#facc15", // yellow
+  "#0ea5e9", // sky
+  "#64748b", // slate
+  "#f97373", // soft red
+  "#10b981", // emerald
+  "#6366f1", // indigo
+  "#ec4899", // pink
+  "#ef4444", // red
+  "#14b8a6", // teal
+  "#8b5cf6", // purple
+  "#eab308", // amber
+  "#0f766e", // dark teal
+  "#1d4ed8", // deep blue
+  "#7c2d12", // burnt orange
+  "#3f6212", // moss
+];
 
 const app = express();
 const roomTimers = {};
@@ -28,6 +57,45 @@ app.use(express.json());
 
 const disconnectTimers = {};
 
+app.post("/profile/setup", (req, res) => {
+  const auth = req.headers.authorization;
+
+  if (!auth) {
+    return res.status(401).json({ error: "No token" });
+  }
+
+  const token = auth.split(" ")[1];
+
+  try {
+    const decoded = verifyToken(token);
+
+    const { username, displayName } = req.body;
+
+    if (!username || !displayName) {
+      return res
+        .status(400)
+        .json({ error: "Username and displayName are required" });
+    }
+
+    if (isUsernameTaken(username, decoded.id)) {
+      return res.status(400).json({ error: "USERNAME_TAKEN" });
+    }
+
+    let user = users[decoded.id];
+    if (!user) {
+      user = getOrCreateUserFromToken(decoded);
+    }
+
+    user.username = username;
+    user.displayName = displayName;
+
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error("Profile setup error:", err);
+    res.status(401).json({ error: "Invalid token" });
+  }
+});
+
 app.post("/auth/google", async (req, res) => {
     try {
         const { credential } = req.body;
@@ -36,9 +104,11 @@ app.post("/auth/google", async (req, res) => {
             return res.status(400).json({ error: "Missing credential" });
         }
 
-        const user = await verifyGoogleToken(credential);
+        const googleUser = await verifyGoogleToken(credential);
 
-        console.log("[GOOGLE LOGIN]", user.email);
+        console.log("[GOOGLE LOGIN]", googleUser.email);
+
+        const user = getOrCreateUserFromGoogle(googleUser);
 
         // ⭐ CREATE JWT
         const token = createToken(user);
@@ -77,9 +147,10 @@ io.use((socket, next) => {
             return next(new Error("No token"));
         }
 
-        const user = verifyToken(token);
+        const payload = verifyToken(token);
+        const user = getOrCreateUserFromToken(payload);
 
-        // attach user to socket
+        // attach enriched user (with username/displayName if set) to socket
         socket.user = user;
 
         next();
@@ -112,8 +183,11 @@ io.on("connection", (socket) => {
                 [userId]: {
                     userId,
                     socketId: socket.id,
-                    name: socket.user.name,
+                    name: socket.user.displayName || socket.user.name,
                     picture: socket.user.picture,
+                    username: socket.user.username || null,
+                    displayName: socket.user.displayName || socket.user.name,
+                    color: PLAYER_COLORS[0],
                     alive: true,
                     role: null,
                     connected: true,
@@ -176,11 +250,15 @@ io.on("connection", (socket) => {
 
             console.log(`[RECONNECT] ${room.players[userId].name}`);
         } else {
+            const index = Object.keys(room.players).length;
             room.players[userId] = {
                 userId,
                 socketId: socket.id,
-                name: socket.user.name,
+                name: socket.user.displayName || socket.user.name,
                 picture: socket.user.picture,
+                username: socket.user.username || null,
+                displayName: socket.user.displayName || socket.user.name,
+                color: PLAYER_COLORS[index % PLAYER_COLORS.length],
                 alive: true,
                 role: null,
                 connected: true,
@@ -251,10 +329,10 @@ io.on("connection", (socket) => {
         // optional: prevent self vote (remove if you want allow)
         if (socket.id === targetId) return;
 
-        // ⭐ store / overwrite vote
-        room.game.votes[socket.id] = targetId;
+        // ⭐ store / overwrite vote keyed by userId
+        room.game.votes[userId] = targetId;
 
-        console.log(`[VOTE] ${socket.id} -> ${targetId}`);
+        console.log(`[VOTE] ${userId} -> ${targetId}`);
 
         emitRoomState(io, roomId, room);
     });
@@ -344,19 +422,17 @@ io.on("connection", (socket) => {
         for (const roomId in rooms) {
             const room = rooms[roomId];
 
-            if (room.players[socket.id]) {
-                console.log(`[PLAYER LEFT] ${socket.id} from ${roomId}`);
+            const userId = socket.user.id;
 
-                const wasHost = room.hostId === socket.user.id;
+            if (room.players[userId]) {
+                console.log(`[PLAYER LEFT] ${userId} from ${roomId}`);
 
-                // remove player
-                const userId = socket.user.id;
+                const wasHost = room.hostId === userId;
 
-                if (room.players[userId]) {
-                    room.players[userId].connected = false;
+                // mark player as disconnected
+                room.players[userId].connected = false;
 
-                    console.log(`[PLAYER DISCONNECTED] ${userId}`);
-                }
+                console.log(`[PLAYER DISCONNECTED] ${userId}`);
 
                 // ⭐ delete room if empty
                 if (Object.keys(room.players).length === 0) {

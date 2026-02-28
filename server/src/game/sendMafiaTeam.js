@@ -10,7 +10,7 @@ export function sendMafiaTeam(io, room) {
   
     // send ONLY to mafia players
     mafiaPlayers.forEach((mafioso) => {
-      io.to(mafioso.id).emit("mafia-team", mafiaInfo);
+      io.to(mafioso.socketId).emit("mafia-team", mafiaInfo);
     });
   
     console.log("[MAFIA TEAM SENT]");

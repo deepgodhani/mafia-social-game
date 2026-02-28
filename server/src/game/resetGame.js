@@ -13,6 +13,9 @@ export function resetGame(room) {
     },
     round: 0,
     result: null,
+    lastNightResult: null,
+    lastEliminated: null,
+    lastVotes: [],
   };
 
   // reset players
