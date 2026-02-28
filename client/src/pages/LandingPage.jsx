@@ -24,6 +24,7 @@ function LandingPage() {
 
       <GoogleLogin
         onSuccess={async (credentialResponse) => {
+          //this is where you would send the credential to the backend for verification and to create a session
           const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
           const res = await fetch(`${SERVER_URL}/auth/google`, {
             method: "POST",
