@@ -1,20 +1,24 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 
 export function useMicrophone() {
-  const [stream, setStream] = useState(null);
   const [error, setError] = useState(null);
 
+  const streamRef = useRef(null);   // ⭐ IMPORTANT
   const audioRef = useRef(null);
 
-  const startMicrophone = async () => {
+  const startMicrophone = useCallback(async () => {
+    if (streamRef.current) {
+      console.log("[MIC] already running");
+      return;
+    }
+
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
 
-      setStream(mediaStream);
+      streamRef.current = mediaStream;
 
-      // attach stream to audio element
       if (audioRef.current) {
         audioRef.current.srcObject = mediaStream;
       }
@@ -24,22 +28,22 @@ export function useMicrophone() {
       console.error("[MIC ERROR]", err);
       setError(err.message);
     }
-  };
+  }, []);
 
-  const setMuted = (muted) => {
-    if (!stream) return;
-  
-    stream.getAudioTracks().forEach((track) => {
+  const setMuted = useCallback((muted) => {
+    if (!streamRef.current) return;
+
+    streamRef.current.getAudioTracks().forEach((track) => {
       track.enabled = !muted;
     });
-  
+
     console.log("[VOICE] muted:", muted);
-  };
+  }, []);
 
-  const stopMicrophone = () => {
-    if (!stream) return;
+  const stopMicrophone = useCallback(() => {
+    if (!streamRef.current) return;
 
-    stream.getTracks().forEach((track) => {
+    streamRef.current.getTracks().forEach((track) => {
       track.stop();
     });
 
@@ -47,15 +51,16 @@ export function useMicrophone() {
       audioRef.current.srcObject = null;
     }
 
-    setStream(null);
+    streamRef.current = null;
+
     console.log("[MIC] Stopped");
-  };
+  }, []);
 
   return {
-    stream,
+    stream: streamRef.current,
     error,
-    startMicrophone,
     audioRef,
+    startMicrophone,
     setMuted,
     stopMicrophone,
   };

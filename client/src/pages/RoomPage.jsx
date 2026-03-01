@@ -135,12 +135,22 @@ function RoomPage() {
   // ========================
   // MICROPHONE START
   // ========================
+  // useEffect(() => {
+  //   startMicrophone();
+  //   return () => {
+  //     stopMicrophone();
+  //   };
+  // }, [startMicrophone, stopMicrophone]);
+
+
   useEffect(() => {
     startMicrophone();
+  
     return () => {
       stopMicrophone();
     };
-  }, [startMicrophone, stopMicrophone]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);   // ⭐ RUN ONLY ONCE
 
   // ========================
   // VOICE MUTE RULES (phase + user toggle)
