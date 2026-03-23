@@ -39,9 +39,9 @@ function PhaseTransition({ phase }) {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center">
-      <div className="panel px-6 py-4 text-center animate-fadeIn">
-        <h1 className="text-2xl md:text-4xl font-bold text-amber-200 tracking-wide">
+    <div className="fixed inset-0 z-[150] bg-noir-950/40 backdrop-blur-2xl flex items-center justify-center">
+      <div className="panel px-8 py-6 text-center border-white/10 animate-in fade-in zoom-in duration-300">
+        <h1 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase drop-shadow-2xl">
           {getPhaseText(phase)}
         </h1>
       </div>

@@ -11,27 +11,33 @@ function NightView({ role, timer, players, myUserId, onNightAction }) {
   };
 
   return (
-    <div className="game-shell pt-4 space-y-4">
-      <div className="panel p-4 text-center">
-        <div className="panel-header">Night Falls</div>
-
-        <h1 className="phase-title mt-1">The City Sleeps</h1>
-
-        <p className="text-sm text-amber-700 mt-2">
-          Make your move before dawn.
+    <div className="game-shell space-y-6">
+      <div className="text-center py-4">
+        <div className="panel-header opacity-40">Phase: 02</div>
+        <h1 className="phase-title text-4xl italic">Night Falls</h1>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mt-2">
+          The City Sleeps... For Now
         </p>
+      </div>
 
-        <div className="mt-3 text-lg font-bold text-amber-200 tabular-nums">
-          {timer}s
+      <div className="panel p-6 border-crimson-900/30 bg-crimson-950/5">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="panel-header text-crimson-600">Current Directive</div>
+            <p className="text-sm font-bold text-white uppercase tracking-tight">
+              {canAct ? "Select your objective" : "Remain Silent"}
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-[10px] text-white/20 font-black uppercase tracking-widest">Time Remaining</div>
+            <div className="text-2xl font-black tabular-nums text-white">{timer}s</div>
+          </div>
         </div>
       </div>
 
       {canAct ? (
-        <>
-          <p className="text-sm uppercase tracking-widest text-amber-700 mb-3">
-            Choose your target
-          </p>
-
+        <div className="space-y-4">
+          <div className="panel-header px-1">Active Targets</div>
           <PlayerBoard
             players={players.filter(
               (p) => p.userId !== myUserId && p.alive
@@ -43,15 +49,22 @@ function NightView({ role, timer, players, myUserId, onNightAction }) {
           />
 
           {selectedId && (
-            <p className="mt-2 text-xs text-amber-500">
-              You have selected a target for tonight.
-            </p>
+            <div className="panel p-3 border-crimson-600/30 bg-crimson-600/10 animate-pulse">
+              <p className="text-[10px] font-black text-crimson-500 text-center uppercase tracking-[0.2em]">
+                Objective Locked. Awaiting Dawn.
+              </p>
+            </div>
           )}
-        </>
+        </div>
       ) : (
-        <p className="text-zinc-500 mt-8">
-          Stay quiet... waiting for morning.
-        </p>
+        <div className="pt-12 text-center space-y-4">
+          <div className="w-12 h-12 border-2 border-white/5 rounded-full mx-auto flex items-center justify-center animate-spin duration-[3000ms]">
+            <div className="w-1 h-1 bg-white/20 rounded-full"></div>
+          </div>
+          <p className="text-[10px] text-white/20 font-bold uppercase tracking-[0.4em]">
+            Listening to the rain...
+          </p>
+        </div>
       )}
     </div>
   );

@@ -10,36 +10,50 @@ function VotingView({ players, myUserId, onVote, timer }) {
   };
 
   return (
-    <div className="game-shell pt-4 space-y-4 text-amber-50">
-      <div className="panel p-4 text-center">
-        <div className="panel-header">Town Decision</div>
-
-        <h1 className="phase-title mt-1">Voting Phase</h1>
-
-        <p className="text-sm text-amber-700 mt-2">
-          Choose carefully. Every vote matters.
+    <div className="game-shell space-y-6">
+      <div className="text-center py-4">
+        <div className="panel-header opacity-40">Phase: 03</div>
+        <h1 className="phase-title text-4xl italic text-crimson-600">Judgment</h1>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mt-2">
+          A Sacrifice for the Greater Good
         </p>
+      </div>
 
-        <div className="mt-3 text-lg font-bold text-amber-200 tabular-nums">
-          {timer}s
+      <div className="panel p-6 border-white/10 bg-noir-900/40">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="panel-header">The Gavel</div>
+            <p className="text-sm font-bold text-white uppercase tracking-tight">
+              Cast your final verdict
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-[10px] text-white/20 font-black uppercase tracking-widest">Deliberation</div>
+            <div className="text-2xl font-black tabular-nums text-white">{timer}s</div>
+          </div>
         </div>
       </div>
 
-      <PlayerBoard
-        players={players.filter(
-          (p) => p.alive && p.userId !== myUserId
-        )}
-        myUserId={myUserId}
-        selectable={true}
-        selectedId={selectedId}
-        onSelect={handleSelect}
-      />
+      <div className="space-y-4">
+        <div className="panel-header px-1">Accused Citizens</div>
+        <PlayerBoard
+          players={players.filter(
+            (p) => p.alive && p.userId !== myUserId
+          )}
+          myUserId={myUserId}
+          selectable={true}
+          selectedId={selectedId}
+          onSelect={handleSelect}
+        />
 
-      {selectedId && (
-        <p className="mt-2 text-xs text-amber-500">
-          Your vote has been cast.
-        </p>
-      )}
+        {selectedId && (
+          <div className="panel p-4 border-crimson-600 bg-crimson-950/30">
+            <p className="text-xs font-bold text-white text-center uppercase tracking-widest">
+              Verdict has been sealed.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

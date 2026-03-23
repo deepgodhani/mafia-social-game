@@ -9,66 +9,47 @@ function PlayerFooter({
   if (!me) return null;
 
   const micLabel = hardMuted
-    ? "Muted by phase"
+    ? "Signal Blocked"
     : muted
-      ? "Mic off"
-      : "Mic on";
+      ? "Mic Cut"
+      : "Channel Open";
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-amber-900/30 bg-black/80 backdrop-blur-md">
-      <div className="game-shell py-2">
-        <div className="panel px-3 py-2 flex items-center justify-between">
+    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/5 bg-noir-950/80 backdrop-blur-xl">
+      <div className="max-w-lg mx-auto px-4 py-3 sm:px-6">
+        <div className="panel px-4 py-3 flex items-center justify-between border-white/10 bg-white/[0.02]">
           {/* LEFT — identity */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div
-              className="w-8 h-8 rounded-full border border-amber-700/40"
-              style={{ backgroundColor: me.color || "#444" }}
+              className="w-8 h-8 rounded border border-white/10 rotate-3"
+              style={{ backgroundColor: me.color || "#111" }}
             />
             <div>
-              <div className="text-sm font-semibold text-amber-100">
+              <div className="text-xs font-black text-white uppercase tracking-tight">
                 {me.name}
               </div>
-              <div className="text-[10px] text-amber-700 uppercase tracking-widest">
-                @{me.username || "player"}
+              <div className="text-[8px] text-white/30 font-bold uppercase tracking-widest leading-none">
+                {me.alive ? "OPERATIVE" : "COMPROMISED"}
               </div>
-            </div>
-          </div>
-
-          {/* CENTER — role */}
-          <div className="text-center">
-            <div className="text-[10px] text-amber-700 uppercase tracking-widest">
-              Role
-            </div>
-            <div className="text-sm font-semibold text-amber-200">
-              {role || "?"}
             </div>
           </div>
 
           {/* RIGHT — mic + status */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               disabled={hardMuted}
               onClick={onToggleMute}
-              className={`text-xs px-3 py-1 rounded-full border ${
+              className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded border transition-all ${
                 hardMuted
-                  ? "border-zinc-700 text-zinc-500 cursor-not-allowed"
+                  ? "border-white/5 text-white/10 cursor-not-allowed"
                   : muted
-                    ? "border-red-500 text-red-400"
-                    : "border-emerald-500 text-emerald-400"
+                    ? "border-crimson-900/50 text-crimson-500 bg-crimson-950/20"
+                    : "border-emerald-900/50 text-emerald-500 bg-emerald-950/20"
               }`}
             >
               {micLabel}
             </button>
-
-            <div className="text-right">
-              <div className="text-[10px] text-amber-700 uppercase tracking-widest">
-                Status
-              </div>
-              <div className="text-sm text-amber-100">
-                {me.alive ? "Alive" : "Dead"}
-              </div>
-            </div>
           </div>
         </div>
       </div>

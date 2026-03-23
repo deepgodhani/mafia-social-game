@@ -3,46 +3,105 @@
 @tailwind utilities;
 
 /* =========================
-   NOIR DESIGN SYSTEM (V1)
+   MAFIA NOIR DESIGN SYSTEM
 ========================= */
+
+@layer base {
+  body {
+    @apply bg-noir-950 text-white selection:bg-crimson-800 selection:text-white;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, .phase-title {
+    font-family: 'Playfair Display', serif;
+  }
+}
 
 @layer components {
 
     .game-shell {
-      @apply max-w-md mx-auto px-3 sm:px-4 pb-24;
+      @apply max-w-lg mx-auto px-4 pb-28 pt-4 sm:px-6;
     }
   
     .panel {
-      @apply rounded-2xl border border-amber-900/30
-             bg-zinc-950/80 backdrop-blur-md
-             shadow-[0_0_40px_rgba(0,0,0,0.6)];
+      @apply rounded-xl border border-white/10
+             bg-noir-900/60 backdrop-blur-xl
+             shadow-[0_8px_32px_rgba(0,0,0,0.8)];
     }
   
     .panel-header {
-      @apply text-[11px] uppercase tracking-[0.2em]
-             text-amber-700 font-semibold;
+      @apply text-[10px] uppercase tracking-[0.3em]
+             text-white/40 font-bold mb-1;
     }
   
     .phase-title {
-      @apply text-lg font-bold uppercase tracking-wide
-             text-amber-100;
+      @apply text-2xl font-black uppercase tracking-wider
+             text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)];
     }
   
     .pill {
-      @apply rounded-full px-3 py-1 text-xs
-             bg-amber-900/40 text-amber-200
-             border border-amber-700/30;
+      @apply rounded-full px-3 py-1 text-[10px] uppercase tracking-widest
+             bg-white/5 text-white/60
+             border border-white/10 transition-colors
+             hover:bg-white/10 hover:text-white;
     }
   
     .btn-primary {
-      @apply w-full rounded-2xl py-3 px-4
-             bg-amber-700 text-black font-bold
-             active:scale-95 transition-transform;
+      @apply w-full rounded-xl py-4 px-6
+             bg-white text-black font-black uppercase tracking-widest
+             text-xs shadow-[0_4px_20px_rgba(255,255,255,0.2)]
+             active:scale-[0.98] transition-all hover:bg-zinc-200;
     }
   
     .btn-danger {
-      @apply w-full rounded-2xl py-3 px-4
-             bg-red-800 text-red-100 font-bold
-             active:scale-95 transition-transform;
+      @apply w-full rounded-xl py-4 px-6
+             bg-crimson-700 text-white font-black uppercase tracking-widest
+             text-xs shadow-[0_4px_20px_rgba(139,0,0,0.3)]
+             active:scale-[0.98] transition-all hover:bg-crimson-600;
     }
+
+    .btn-outline {
+      @apply w-full rounded-xl py-4 px-6
+             bg-transparent text-white border border-white/20
+             font-black uppercase tracking-widest text-xs
+             active:scale-[0.98] transition-all hover:bg-white/5;
+    }
+
+    .status-badge {
+      @apply inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tighter;
+    }
+
+    /* Dossier Typography */
+    .dossier-text {
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* Dramatic Accents */
+    .accent-crimson {
+      @apply text-crimson-600 drop-shadow-[0_0_8px_rgba(175,0,0,0.4)];
+    }
+  }
+
+  /* Custom Utilities */
+  .grain {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Responsive Scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-noir-950;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20;
   }

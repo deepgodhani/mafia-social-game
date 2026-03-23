@@ -2,37 +2,37 @@ import PlayerBoard from "./PlayerBoard";
 
 function DayView({ timer, players , onShowMorningReport}) {
   return (
-    <div className="game-shell pt-4 space-y-4 text-amber-50">
-
-      <div className="panel p-4 text-center">
-        <div className="panel-header">Morning Report</div>
-
-        <h1 className="phase-title mt-1">
-          Day Phase
-        </h1>
-
-        <p className="text-sm text-amber-700 mt-2">
-          Discuss, observe, and decide who to trust.
+    <div className="game-shell space-y-6">
+      <div className="text-center py-4">
+        <div className="panel-header opacity-40">Phase: 01</div>
+        <h1 className="phase-title text-4xl italic">Daylight</h1>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mt-2">
+          The Truth is Hidden in Plain Sight
         </p>
+      </div>
 
-        <div className="mt-3 text-lg font-bold text-amber-200 tabular-nums">
-          {timer}s
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={onShowMorningReport}
+          className="panel p-4 text-center hover:bg-white/5 transition-colors border-white/10"
+        >
+          <div className="panel-header">Archive</div>
+          <div className="text-[10px] font-black uppercase tracking-widest">Morning Paper</div>
+        </button>
+
+        <div className="panel p-4 text-center border-white/5">
+          <div className="panel-header">Adjournment</div>
+          <div className="text-[10px] font-black uppercase tracking-widest tabular-nums">{timer}s Remaining</div>
         </div>
       </div>
 
-      <div className="flex justify-center">
-  <button
-    onClick={onShowMorningReport}
-    className="pill hover:border-amber-500 transition"
-  >
-    View Last Night
-  </button>
-</div>
-
-      <PlayerBoard
-        players={players}
-        selectable={false}
-      />
+      <div className="space-y-4">
+        <div className="panel-header px-1">Living Souls</div>
+        <PlayerBoard
+          players={players}
+          selectable={false}
+        />
+      </div>
     </div>
   );
 }

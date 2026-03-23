@@ -3,72 +3,78 @@ function LobbyView({ room, myUserId, onStart }) {
   const isHost = room?.hostId === myUserId;
 
   return (
-    <div className="game-shell pt-6 space-y-6 text-amber-50">
+    <div className="game-shell pt-6 space-y-8">
       {/* ROOM CODE */}
-      <div className="panel p-5 text-center">
-        <div className="panel-header">Room Code</div>
-
-        <div className="text-4xl font-bold tracking-[0.35em] mt-2 text-amber-200">
+      <div className="text-center relative">
+        <div className="panel-header opacity-50">Secure Channel</div>
+        <div className="text-5xl font-black tracking-[0.2em] mt-2 text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
           {room?.id}
         </div>
+        <div className="absolute -top-4 -left-4 w-12 h-12 border-t-2 border-l-2 border-white/10"></div>
+        <div className="absolute -bottom-4 -right-4 w-12 h-12 border-b-2 border-r-2 border-white/10"></div>
       </div>
 
-      <div className="panel p-3 text-center">
+      <div className="panel p-4 text-center bg-white/[0.02]">
         {room.hostId === myUserId ? (
-          <p className="text-amber-300 text-sm">
-            Waiting for players to join...
+          <p className="text-white/60 text-xs font-bold uppercase tracking-widest">
+            Waiting for the family to assemble...
           </p>
         ) : (
-          <p className="text-amber-700 text-sm">
-            Waiting for host to start the game...
+          <p className="text-white/40 text-xs font-bold uppercase tracking-widest">
+            The boss is deciding our move...
           </p>
         )}
       </div>
 
       {/* PLAYER GRID */}
-      <div className="grid grid-cols-2 gap-3">
-        {players.map((player) => (
-          <div
-            key={player.userId}
-            className="panel p-3 flex flex-col items-center"
-          >
+      <div>
+        <div className="panel-header mb-4 px-1">Connected Identities ({players.length})</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {players.map((player) => (
             <div
-              className="w-16 h-16 rounded-full mb-2 border border-amber-900/40 flex items-center justify-center overflow-hidden"
-              style={{ backgroundColor: player.color || "#1f2933" }}
-              title={player.username ? `@${player.username}` : player.name}
+              key={player.userId}
+              className="panel p-4 flex items-center gap-4 border-white/5 transition-all duration-500 hover:bg-white/5"
             >
-              <img
-                src={player.picture}
-                alt={player.name}
-                className="w-14 h-14 rounded-full object-cover"
-              />
+              <div
+                className="w-14 h-14 rounded-lg border border-white/10 flex items-center justify-center overflow-hidden grayscale group-hover:grayscale-0 transition-all"
+                style={{ backgroundColor: player.color || "#111" }}
+              >
+                <img
+                  src={player.picture}
+                  alt={player.name}
+                  className="w-full h-full object-cover opacity-60"
+                />
+              </div>
+
+              <div className="flex-1">
+                <p className="text-sm font-black uppercase tracking-tight text-white/90">
+                  {player.displayName || player.name}
+                </p>
+                <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest mt-0.5">
+                  {player.connected !== false ? 'Encrypted' : 'Signal Lost'}
+                </p>
+              </div>
+
+              {room.hostId === player.userId && (
+                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+              )}
             </div>
-
-            <p className="text-sm font-semibold text-center">
-              {player.displayName || player.name}
-            </p>
-
-            {room.hostId === player.userId && (
-              <span className="pill mt-2 text-[10px]">
-                HOST
-              </span>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* HOST CONTROLS */}
       {isHost && (
-        <div className="mt-10">
-          <button onClick={onStart} className="btn-primary px-8">
-            Start Game
+        <div className="pt-8">
+          <button onClick={onStart} className="btn-primary">
+            Initiate Operation
           </button>
         </div>
       )}
 
       {!isHost && (
-        <p className="mt-10 text-zinc-400">
-          Waiting for host to start...
+        <p className="text-center text-[10px] text-white/20 font-bold uppercase tracking-[0.3em] animate-pulse">
+          Awaiting Signal
         </p>
       )}
     </div>

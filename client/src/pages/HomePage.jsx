@@ -50,85 +50,92 @@ function HomePage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-black text-amber-100 flex flex-col">
+    <div className="min-h-screen bg-noir-950 text-white flex flex-col overflow-x-hidden">
       {/* Top navigation */}
-      <header className="border-b border-amber-900/40 bg-black/80 backdrop-blur-md">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold tracking-widest">
+      <header className="border-b border-white/5 bg-noir-950/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="max-w-xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate("/home")}>
+            <span className="text-xl font-black tracking-tighter italic">
               MAFIA
             </span>
-            <span className="text-[10px] text-amber-700 uppercase tracking-[0.2em]">
+            <span className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em] group-hover:text-crimson-600 transition-colors">
               Noir 
             </span>
           </div>
 
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-2">
             <button
-              className="pill text-xs"
+              className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors"
               onClick={() => setShowRulebook(true)}
             >
-              Rulebook
+              Rules
             </button>
-
+            <div className="w-1 h-1 bg-white/10 rounded-full"></div>
             <button
-              className="pill text-xs"
+              className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors"
               onClick={() => navigate("/profile-setup")}
             >
               Profile
-            </button>
-
-            <div className="h-4 w-px bg-amber-900/40" />
-
-            <span className="text-xs text-amber-500 max-w-[120px] truncate">
-              {userLabel}
-            </span>
-
-            <button
-              onClick={handleLogout}
-              className="text-xs text-amber-400 hover:text-red-400 transition"
-            >
-              Logout
             </button>
           </div>
         </div>
       </header>
 
       {/* Main content */}
-      <main className="flex-1 flex items-center justify-center">
-        <div className="max-w-md w-full px-4 space-y-6">
-          <div className="panel p-5 text-center space-y-2">
-            <div className="panel-header">Central Station</div>
-            <p className="text-sm text-amber-700">
-              Create a new room for your crew or join an existing code.
+      <main className="flex-1 flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          
+          <div className="text-center space-y-2">
+            <div className="panel-header opacity-40">Intelligence Hub</div>
+            <h1 className="text-4xl font-black uppercase tracking-tight leading-none italic">
+              Central Station
+            </h1>
+            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] max-w-[200px] mx-auto">
+              Initiate a new operation or join a signal.
             </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <button
               onClick={handleCreateRoom}
-              className="btn-primary w-full py-3"
+              className="btn-primary"
             >
-              Create Room
+              New Operation
             </button>
 
-            <div className="panel p-3 flex gap-2 items-center">
+            <div className="relative group">
               <input
                 value={roomCode}
                 onChange={(e) =>
                   setRoomCode(e.target.value.toUpperCase())
                 }
-                placeholder="Enter room code"
-                className="flex-1 px-3 py-2 rounded bg-zinc-900 text-amber-50 placeholder:text-amber-700 text-sm"
+                placeholder="SIGNAL CODE"
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-6 text-center font-black tracking-[0.5em] text-white placeholder:text-white/10 focus:outline-none focus:border-white/20 focus:bg-white/[0.07] transition-all"
               />
-
-              <button
-                onClick={handleJoinRoom}
-                className="btn-secondary px-4 py-2 text-sm"
-              >
-                Join
-              </button>
+              {roomCode && (
+                <button
+                  onClick={handleJoinRoom}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-white"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+              )}
             </div>
+          </div>
+
+          <div className="pt-8 text-center border-t border-white/5">
+             <div className="inline-flex items-center gap-3">
+                <span className="text-[10px] text-white/20 font-black uppercase tracking-widest">{userLabel}</span>
+                <div className="w-1 h-1 bg-white/10 rounded-full"></div>
+                <button
+                  onClick={handleLogout}
+                  className="text-[10px] text-white/20 hover:text-crimson-600 font-black uppercase tracking-widest transition-colors"
+                >
+                  Terminate Session
+                </button>
+             </div>
           </div>
         </div>
       </main>

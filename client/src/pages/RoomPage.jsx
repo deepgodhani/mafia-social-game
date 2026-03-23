@@ -445,7 +445,7 @@ function RoomPage() {
   // FINAL RENDER
   // ========================
   return (
-    <div className="min-h-screen bg-black text-amber-50 flex flex-col">
+    <div className="min-h-screen bg-noir-950 text-white flex flex-col">
       <GameHUD phase={phase} timer={timer} role={role} roomId={id} />
 
       <PhaseTransition phase={phase} />

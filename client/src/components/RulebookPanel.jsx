@@ -1,97 +1,71 @@
 function RulebookPanel({ onClose }) {
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-      <div className="panel p-6 max-w-lg w-[90%] space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="panel-header">Rulebook</div>
+    <div className="fixed inset-0 z-[110] bg-noir-950/90 backdrop-blur-xl flex items-center justify-center p-4">
+      <div className="panel p-8 max-w-lg w-full space-y-6 animate-in fade-in zoom-in duration-300 border-white/10">
+        <div className="flex items-center justify-between border-b border-white/5 pb-4">
+          <div className="panel-header opacity-40">Intelligence Folder</div>
           <button
             onClick={onClose}
-            className="text-amber-500 text-xs uppercase tracking-widest"
+            className="text-white/40 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors"
           >
             Close
           </button>
         </div>
 
-        <section>
-          <h2 className="text-sm font-semibold text-amber-200 uppercase tracking-widest">
-            Objective
-          </h2>
-          <p className="text-sm text-amber-600 mt-1">
-            Mafia want to quietly outnumber the town. Citizens want to
-            expose and eliminate all mafia.
-          </p>
-        </section>
+        <div className="max-h-[60vh] overflow-y-auto pr-4 space-y-8 custom-scrollbar">
+          <section>
+            <h2 className="text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2">
+              The Objective
+            </h2>
+            <p className="text-sm text-white/60 leading-relaxed dossier-text italic">
+              Mafia want to quietly outnumber the town. Citizens must expose and eliminate the infiltrators before they are outnumbered.
+            </p>
+          </section>
 
-        <section>
-          <h2 className="text-sm font-semibold text-amber-200 uppercase tracking-widest">
-            Phases
-          </h2>
-          <ul className="mt-1 text-sm text-amber-600 space-y-1 list-disc list-inside">
-            <li>
-              <span className="font-semibold">Night</span>: Mafia,
-              Doctor, and Detective act in secret.
-            </li>
-            <li>
-              <span className="font-semibold">Day &amp; Discussion</span>:
-              Everyone talks and shares suspicions.
-            </li>
-            <li>
-              <span className="font-semibold">Voting</span>: Town votes
-              to eliminate a suspect.
-            </li>
-          </ul>
-        </section>
+          <section>
+            <h2 className="text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2">
+              Operational Phases
+            </h2>
+            <ul className="space-y-3">
+              <li className="flex gap-3">
+                <span className="text-[10px] font-black text-crimson-600 mt-1">01</span>
+                <p className="text-xs text-white/50"><span className="text-white font-bold uppercase tracking-tight">Night:</span> Mafia, Doctor, and Detective execute secret directives.</p>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-[10px] font-black text-crimson-600 mt-1">02</span>
+                <p className="text-xs text-white/50"><span className="text-white font-bold uppercase tracking-tight">Discussion:</span> The city wakes. Gather intelligence and share suspicions.</p>
+              </li>
+              <li className="flex gap-3">
+                <span className="text-[10px] font-black text-crimson-600 mt-1">03</span>
+                <p className="text-xs text-white/50"><span className="text-white font-bold uppercase tracking-tight">Judgment:</span> Cast ballots to eliminate a suspected threat.</p>
+              </li>
+            </ul>
+          </section>
 
-        <section>
-          <h2 className="text-sm font-semibold text-amber-200 uppercase tracking-widest">
-            Roles
-          </h2>
-          <ul className="mt-1 text-sm text-amber-600 space-y-1 list-disc list-inside">
-            <li>
-              <span className="font-semibold text-red-400">
-                Mafia
-              </span>
-              : Choose one player to kill each night.
-            </li>
-            <li>
-              <span className="font-semibold text-emerald-400">
-                Doctor
-              </span>
-              : Protect one player each night. If they are attacked,
-              they survive.
-            </li>
-            <li>
-              <span className="font-semibold text-sky-400">
-                Detective
-              </span>
-              : Investigate one player each night to learn if they are
-              mafia.
-            </li>
-            <li>
-              <span className="font-semibold text-amber-300">
-                Citizen
-              </span>
-              : No night power. Use your voice and vote.
-            </li>
-          </ul>
-        </section>
+          <section>
+            <h2 className="text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2">
+              Key Identities
+            </h2>
+            <div className="grid gap-3">
+              <div className="p-3 bg-white/[0.02] border border-white/5 rounded-lg">
+                <p className="text-[10px] font-black text-crimson-600 uppercase mb-1">Mafia</p>
+                <p className="text-[10px] text-white/40 leading-tight">Eliminate one target per night cycle.</p>
+              </div>
+              <div className="p-3 bg-white/[0.02] border border-white/5 rounded-lg">
+                <p className="text-[10px] font-black text-emerald-500 uppercase mb-1">Doctor</p>
+                <p className="text-[10px] text-white/40 leading-tight">Intercept a hit. Target survives if attacked.</p>
+              </div>
+              <div className="p-3 bg-white/[0.02] border border-white/5 rounded-lg">
+                <p className="text-[10px] font-black text-white uppercase mb-1">Detective</p>
+                <p className="text-[10px] text-white/40 leading-tight">Verify alignment. Identify the Mafia.</p>
+              </div>
+            </div>
+          </section>
+        </div>
 
-        <section>
-          <h2 className="text-sm font-semibold text-amber-200 uppercase tracking-widest">
-            Voting Rules
-          </h2>
-          <ul className="mt-1 text-sm text-amber-600 space-y-1 list-disc list-inside">
-            <li>Only alive players can vote.</li>
-            <li>
-              You can vote for one player each round. Your choice is
-              highlighted on your screen.
-            </li>
-            <li>
-              If there is a tie for most votes, nobody is eliminated
-              that round.
-            </li>
-          </ul>
-        </section>
+        <div className="pt-4 border-t border-white/5 text-center">
+           <p className="text-[8px] text-white/20 font-black uppercase tracking-[0.4em]">Confidential - Eyes Only</p>
+        </div>
       </div>
     </div>
   );

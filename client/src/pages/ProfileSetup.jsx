@@ -58,9 +58,9 @@ function ProfileSetup() {
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       if (data.error === "USERNAME_TAKEN") {
-        setError("That username is already taken. Try another.");
+        setError("That alias is already on the records. Choose another.");
       } else {
-        setError("Could not save profile. Please try again.");
+        setError("Network failure. The records could not be updated.");
       }
       return;
     }
@@ -69,35 +69,56 @@ function ProfileSetup() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-amber-100 flex flex-col items-center justify-center gap-4">
-      <h2 className="text-2xl font-bold">Profile Setup</h2>
+    <div className="min-h-screen bg-noir-950 text-white flex flex-col items-center justify-center p-6">
+      <div className="max-w-sm w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        
+        <div className="text-center space-y-2">
+          <div className="panel-header opacity-40">Documentation</div>
+          <h2 className="text-3xl font-black uppercase italic tracking-tight">Identity Records</h2>
+          <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">How should the city address you?</p>
+        </div>
 
-      <input
-        placeholder="Username (unique)"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        className="p-2 rounded bg-zinc-900"
-      />
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Coded Alias</label>
+            <input
+              placeholder="UNIQUE_ID"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-6 text-white font-mono uppercase tracking-widest focus:outline-none focus:border-white/20 transition-all"
+            />
+          </div>
 
-      <input
-        placeholder="Display Name"
-        value={displayName}
-        onChange={(e) => setDisplayName(e.target.value)}
-        className="p-2 rounded bg-zinc-900"
-      />
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Public Name</label>
+            <input
+              placeholder="DISPLAY_NAME"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-6 text-white font-bold uppercase tracking-widest focus:outline-none focus:border-white/20 transition-all"
+            />
+          </div>
+        </div>
 
-      {error && (
-        <p className="text-sm text-red-400 max-w-xs text-center">
-          {error}
+        {error && (
+          <div className="panel p-3 border-crimson-900/50 bg-crimson-950/20">
+            <p className="text-[10px] font-black text-crimson-500 text-center uppercase tracking-widest">
+              {error}
+            </p>
+          </div>
+        )}
+
+        <button
+          onClick={saveProfile}
+          className="btn-primary"
+        >
+          Confirm Identity
+        </button>
+
+        <p className="text-[8px] text-center text-white/10 font-black uppercase tracking-[0.4em] pt-4">
+          Unverified identities will be purged
         </p>
-      )}
-
-      <button
-        onClick={saveProfile}
-        className="px-6 py-2 bg-amber-700 rounded"
-      >
-        Continue
-      </button>
+      </div>
     </div>
   );
 }
