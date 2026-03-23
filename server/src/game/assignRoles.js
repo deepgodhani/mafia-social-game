@@ -1,3 +1,5 @@
+import { shuffleArray } from "./shuffleArray.js";
+
 export function assignRoles(room, players) {
     const total = players.length;
   
@@ -22,10 +24,10 @@ export function assignRoles(room, players) {
     }
   
     // shuffle roles
-    roles.sort(() => Math.random() - 0.5);
+    const shuffledRoles = shuffleArray(roles);
   
     players.forEach((playerId, i) => {
-      room.players[playerId].role = roles[i];
-      room.game.roles[playerId] = roles[i];
+      room.players[playerId].role = shuffledRoles[i];
+      room.game.roles[playerId] = shuffledRoles[i];
     });
   }

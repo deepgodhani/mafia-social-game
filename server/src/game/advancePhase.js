@@ -95,6 +95,16 @@ export function advancePhase(io, roomId, room, roomTimers) {
                     type: "NO_KILL",
                 };
             }
+
+            const nightResult = checkWinCondition(room);
+            if (nightResult) {
+                changePhase(io, roomId, room, PHASES.END_GAME);
+                room.game.result = nightResult;
+                console.log("[GAME ENDED]", nightResult);
+                emitRoomState(io, roomId, room);
+                return;
+            }
+
             changePhase(io, roomId, room, PHASES.DAY_RESULT);
             // show night result card for ~7 seconds before discussion
             startPhaseTimer(io, roomId, room, 7, roomTimers);

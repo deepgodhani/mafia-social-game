@@ -14,6 +14,7 @@ export function getPublicRoomState(room) {
       username: p.username || null,
       displayName: p.displayName || p.name,
       color: p.color || null,
+      connected: p.connected,
 
       // ⭐ only reveal roles after game ends
       role: room.game.phase === PHASES.END_GAME ? p.role : null,

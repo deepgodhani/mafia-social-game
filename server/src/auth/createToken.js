@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const SECRET = "super-secret-key"; // later move to env
+const SECRET = process.env.JWT_SECRET || "super-secret-key";
 
 export function createToken(user) {
   return jwt.sign(

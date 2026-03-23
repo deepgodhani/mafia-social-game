@@ -4,7 +4,6 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { generateRoomId } from "./utils/generateRoomId.js";
 import { rooms } from "./rooms/rooms.js";
-import { addPlayerToRoom } from "./rooms/addPlayerToRoom.js";
 import { getPublicRoomState } from "./rooms/getPublicRoomState.js";
 import { emitRoomState } from "./rooms/emitRoomState.js";
 import { isHost } from "./rooms/isHost.js";
@@ -349,7 +348,7 @@ io.on("connection", (socket) => {
         if (!target.alive) return;
 
         // optional: prevent self vote (remove if you want allow)
-        if (socket.id === targetId) return;
+        if (userId === targetId) return;
 
         // ⭐ store / overwrite vote keyed by userId
         room.game.votes[userId] = targetId;
@@ -431,7 +430,7 @@ io.on("connection", (socket) => {
         // only host can restart
         if (room.hostId !== socket.user.id) return;
       
-        resetGame(room);
+        resetGame(room, roomId, roomTimers);
       
         console.log("[GAME RESET]", roomId);
       
@@ -446,7 +445,7 @@ io.on("connection", (socket) => {
 
             const userId = socket.user.id;
 
-            if (room.players[userId]) {
+            if (room.players[userId] && room.players[userId].socketId === socket.id) {
                 console.log(`[PLAYER LEFT] ${userId} from ${roomId}`);
 
                 const wasHost = room.hostId === userId;
@@ -455,9 +454,11 @@ io.on("connection", (socket) => {
                 room.players[userId].connected = false;
 
                 console.log(`[PLAYER DISCONNECTED] ${userId}`);
+                
+                const getConnectedPlayers = () => Object.values(rooms[roomId]?.players || {}).filter(p => p.connected);
 
                 // ⭐ delete room if empty
-                if (Object.keys(room.players).length === 0) {
+                if (getConnectedPlayers().length === 0) {
 
                     // wait before deleting (refresh protection)
                     disconnectTimers[roomId] = setTimeout(() => {
@@ -465,9 +466,13 @@ io.on("connection", (socket) => {
                         // check again after delay
                         if (
                             rooms[roomId] &&
-                            Object.keys(rooms[roomId].players).length === 0
+                            getConnectedPlayers().length === 0
                         ) {
                             console.log(`[ROOM DELETED] ${roomId}`);
+                            if (roomTimers[roomId]) {
+                                clearInterval(roomTimers[roomId]);
+                                delete roomTimers[roomId];
+                            }
                             delete rooms[roomId];
                         }
 
@@ -475,21 +480,21 @@ io.on("connection", (socket) => {
                 }
 
                 // ⭐ assign new host if needed
-                if (wasHost) {
-                    const remainingPlayers = Object.keys(room.players);
+                if (wasHost && rooms[roomId]) {
+                    const remainingPlayers = getConnectedPlayers();
 
                     if (remainingPlayers.length > 0) {
-                        room.hostId = remainingPlayers[0];
-                        console.log(`[NEW HOST] ${room.hostId} in ${roomId}`);
+                        rooms[roomId].hostId = remainingPlayers[0].userId;
+                        console.log(`[NEW HOST] ${rooms[roomId].hostId} in ${roomId}`);
                     } else {
-                        room.hostId = null;
+                        rooms[roomId].hostId = null;
                     }
                 }
 
                 // sync state
-                emitRoomState(io, roomId, room);
-
-                break;
+                if (rooms[roomId]) {
+                    emitRoomState(io, roomId, rooms[roomId]);
+                }
             }
         }
     });

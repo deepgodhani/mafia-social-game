@@ -43,7 +43,14 @@ function RoomPage() {
 
   const [previousPhase, setPreviousPhase] = useState(null);
 
-  const myUserId = token ? JSON.parse(atob(token.split(".")[1])).id : null;
+  let myUserId = null;
+  try {
+    if (token) {
+      myUserId = JSON.parse(atob(token.split(".")[1])).id;
+    }
+  } catch (e) {
+    console.error("Invalid token format");
+  }
 
   const [showVoteReveal, setShowVoteReveal] = useState(false);
 
@@ -84,6 +91,12 @@ function RoomPage() {
   // ========================
   // ROOM + ROLE
   // ========================
+  useEffect(() => {
+    if (room?.game?.phase === "LOBBY") {
+      setRole(null);
+    }
+  }, [room?.game?.phase, setRole]);
+
   useEffect(() => {
     const onRoomState = (nextRoom) => setRoom(nextRoom);
 
