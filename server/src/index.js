@@ -1,5 +1,11 @@
 import "dotenv/config";
 
+// For debugging Azure environment variables
+console.log("--- Checking Environment Variables ---");
+console.log("GOOGLE_CLIENT_ID is set:", !!process.env.GOOGLE_CLIENT_ID);
+console.log("JWT_SECRET is set:", !!process.env.JWT_SECRET);
+console.log("--- End Check ---");
+
 import express from "express";
 import cors from "cors";
 import { createServer } from "http";
