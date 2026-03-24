@@ -1,10 +1,16 @@
 import "dotenv/config";
 
-// For debugging Azure environment variables
-console.log("--- Checking Environment Variables ---");
-console.log("GOOGLE_CLIENT_ID is set:", !!process.env.GOOGLE_CLIENT_ID);
-console.log("JWT_SECRET is set:", !!process.env.JWT_SECRET);
-console.log("--- End Check ---");
+// Graceful error handling for silent crashes
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
+  // In a containerized environment, exiting is a safe way to ensure a clean restart.
+  process.exit(1);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('CRITICAL: Uncaught Exception:', error);
+  process.exit(1);
+});
 
 import express from "express";
 import cors from "cors";
