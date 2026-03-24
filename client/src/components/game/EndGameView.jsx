@@ -1,5 +1,9 @@
-function EndView({ result, players }) {
+import { useNavigate } from "react-router-dom";
+
+function EndView({ result, players, myUserId, hostId, onPlayAgain }) {
+  const navigate = useNavigate();
   const isMafiaWin = result === "MAFIA_WIN";
+  const isHost = myUserId === hostId;
 
   return (
     <div className="game-shell pt-12 space-y-10">
@@ -47,12 +51,18 @@ function EndView({ result, players }) {
       </div>
 
       <div className="pt-8">
-        <button 
-          onClick={() => window.location.reload()} 
-          className="btn-outline"
-        >
-          Return to Shadows
-        </button>
+        {isHost ? (
+          <button onClick={onPlayAgain} className="btn-primary">
+            Play Again
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate("/home")}
+            className="btn-outline"
+          >
+            Return to Shadows
+          </button>
+        )}
       </div>
     </div>
   );

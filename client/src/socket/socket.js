@@ -1,11 +1,15 @@
 import { io } from "socket.io-client";
 
-const token = localStorage.getItem("token");
-
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
 
+// Initialize with autoConnect: false.
+// We will connect manually after a successful login.
 const socket = io(SERVER_URL, {
-  auth: { token },
+  autoConnect: false,
+});
+
+window.addEventListener("beforeunload", () => {
+  socket.disconnect();
 });
 
 export default socket;

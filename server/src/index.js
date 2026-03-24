@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import express from "express";
 import cors from "cors";
 import { createServer } from "http";
@@ -192,9 +194,13 @@ io.on("connection", (socket) => {
     //  CREATE ROOM EVENT
     socket.on("create-room", () => {
         const roomId = generateRoomId();
-
         const userId = socket.user.id;
+        const user = users[userId]; // Fetch latest user data from store
 
+        if (!user) {
+            console.error(`[CREATE-ROOM-ERROR] No user found for id: ${userId}`);
+            return;
+        }
 
         rooms[roomId] = {
             id: roomId,
@@ -204,10 +210,10 @@ io.on("connection", (socket) => {
                 [userId]: {
                     userId,
                     socketId: socket.id,
-                    name: socket.user.displayName || socket.user.name,
-                    picture: socket.user.picture,
-                    username: socket.user.username || null,
-                    displayName: socket.user.displayName || socket.user.name,
+                    name: user.displayName || user.name,
+                    picture: user.picture,
+                    username: user.username || null,
+                    displayName: user.displayName || user.name,
                     color: PLAYER_COLORS[0],
                     alive: true,
                     role: null,
@@ -253,6 +259,15 @@ io.on("connection", (socket) => {
     socket.on("join-room", ({ roomId }) => {
         const room = rooms[roomId];
         const userId = socket.user.id;
+        const user = users[userId]; // Fetch latest user data
+
+        if (!user) {
+            console.error(`[JOIN-ROOM-ERROR] No user found for id: ${userId}`);
+            socket.emit("error-message", {
+              message: "Authentication error. Please try logging out and back in.",
+            });
+            return;
+        }
 
         if (!room) {
             socket.emit("error-message", { message: "Room not found" });
@@ -275,10 +290,10 @@ io.on("connection", (socket) => {
             room.players[userId] = {
                 userId,
                 socketId: socket.id,
-                name: socket.user.displayName || socket.user.name,
-                picture: socket.user.picture,
-                username: socket.user.username || null,
-                displayName: socket.user.displayName || socket.user.name,
+                name: user.displayName || user.name,
+                picture: user.picture,
+                username: user.username || null,
+                displayName: user.displayName || user.name,
                 color: PLAYER_COLORS[index % PLAYER_COLORS.length],
                 alive: true,
                 role: null,
@@ -457,26 +472,27 @@ io.on("connection", (socket) => {
                 
                 const getConnectedPlayers = () => Object.values(rooms[roomId]?.players || {}).filter(p => p.connected);
 
-                // ⭐ delete room if empty
+                // ⭐ Conditionally delete room if empty
                 if (getConnectedPlayers().length === 0) {
+                    const isEndGame = rooms[roomId]?.game.phase === PHASES.END_GAME;
+                    // Keep room alive longer after a game ends to allow host to restart.
+                    const deletionDelay = isEndGame ? 60000 : 5000; // 1 min for ended games, 5s otherwise.
 
-                    // wait before deleting (refresh protection)
+                    console.log(`[DELETION TIMER] Starting ${deletionDelay}ms timer for empty room ${roomId}`);
+
                     disconnectTimers[roomId] = setTimeout(() => {
-
-                        // check again after delay
-                        if (
-                            rooms[roomId] &&
-                            getConnectedPlayers().length === 0
-                        ) {
-                            console.log(`[ROOM DELETED] ${roomId}`);
+                        // Re-check connected players after the delay
+                        if (rooms[roomId] && getConnectedPlayers().length === 0) {
+                            console.log(`[ROOM DELETED] ${roomId} after timeout.`);
                             if (roomTimers[roomId]) {
                                 clearInterval(roomTimers[roomId]);
                                 delete roomTimers[roomId];
                             }
                             delete rooms[roomId];
+                        } else if (rooms[roomId]) {
+                            console.log(`[DELETION CANCELLED] Players reconnected to room ${roomId}.`);
                         }
-
-                    }, 5000); // ⭐ 5 seconds grace
+                    }, deletionDelay);
                 }
 
                 // ⭐ assign new host if needed

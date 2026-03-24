@@ -24,7 +24,6 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="grain"></div>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/profile-setup" element={<ProfileSetup />} />

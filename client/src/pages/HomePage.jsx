@@ -17,6 +17,13 @@ function HomePage() {
       return;
     }
 
+    // If we have a token but the socket isn't connected, connect it.
+    // This handles users who were already logged in.
+    if (token && !socket.connected) {
+      socket.auth = { token };
+      socket.connect();
+    }
+
     try {
       const payload = JSON.parse(atob(token.split(".")[1]));
       setUserLabel(payload.email || payload.name || "Player");
@@ -148,4 +155,3 @@ function HomePage() {
 }
 
 export default HomePage;
-

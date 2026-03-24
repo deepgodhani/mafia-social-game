@@ -1,6 +1,7 @@
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import socket from "../socket/socket";
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -61,6 +62,10 @@ function LandingPage() {
 
                 const data = await res.json();
                 localStorage.setItem("token", data.token);
+
+                // Set the auth token and manually connect the socket
+                socket.auth = { token: data.token };
+                socket.connect();
 
                 if (!data.user?.username) {
                   navigate("/profile-setup");

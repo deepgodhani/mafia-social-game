@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import socket from "../socket/socket";
 import { useRoomStore } from "../store/roomStore";
 import { usePlayerStore } from "../store/playerStore";
@@ -25,6 +25,7 @@ import DoctorResult from "../components/game/DoctorResult";
 
 function RoomPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const { room, setRoom } = useRoomStore();
   const { role, setRole } = usePlayerStore();
@@ -104,6 +105,12 @@ function RoomPage() {
       setRole(role);
     };
 
+    const onErrorMessage = ({ message }) => {
+      // A more user-friendly modal could replace this alert.
+      alert(`Error: ${message}`);
+      navigate("/home");
+    };
+
     const onDetectiveResult = (payload) => setDetectiveResult(payload);
     const onDoctorResult = (payload) => setDoctorResult(payload);
 
@@ -115,6 +122,7 @@ function RoomPage() {
     socket.emit("join-room", { roomId: id });
 
     socket.on("room-state", onRoomState);
+    socket.on("error-message", onErrorMessage);
     socket.on("your-role", onYourRole);
     socket.on("detective-result", onDetectiveResult);
     socket.on("doctor-result", onDoctorResult);
@@ -122,12 +130,13 @@ function RoomPage() {
 
     return () => {
       socket.off("room-state", onRoomState);
+      socket.off("error-message", onErrorMessage);
       socket.off("your-role", onYourRole);
       socket.off("detective-result", onDetectiveResult);
       socket.off("doctor-result", onDoctorResult);
       socket.off("mafia-team", onMafiaTeam);
     };
-  }, [id, setRoom, setRole]);
+  }, [id, setRoom, setRole, navigate]);
 
   // ========================
   // TIMER
@@ -148,22 +157,13 @@ function RoomPage() {
   // ========================
   // MICROPHONE START
   // ========================
-  // useEffect(() => {
-  //   startMicrophone();
-  //   return () => {
-  //     stopMicrophone();
-  //   };
-  // }, [startMicrophone, stopMicrophone]);
-
-
   useEffect(() => {
     startMicrophone();
   
     return () => {
       stopMicrophone();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);   // ⭐ RUN ONLY ONCE
+  }, [startMicrophone, stopMicrophone]);
 
   // ========================
   // VOICE MUTE RULES (phase + user toggle)
@@ -388,7 +388,11 @@ function RoomPage() {
   // ========================
   // PHASE RENDER
   // ========================
-  if (!room) return null;
+  if (!room) {
+    return (
+      <div className="min-h-screen bg-noir-950 text-white flex items-center justify-center text-lg font-bold">Loading room...</div>
+    );
+  }
 
   let phaseContent = null;
 
@@ -438,7 +442,15 @@ function RoomPage() {
       />
     );
   } else if (phase === "END_GAME") {
-    phaseContent = <EndView result={room.game.result} players={room.players} />;
+    phaseContent = (
+      <EndView
+        result={room.game.result}
+        players={room.players}
+        myUserId={myUserId}
+        hostId={room.hostId}
+        onPlayAgain={() => socket.emit("play-again", { roomId: id })}
+      />
+    );
   }
 
   // ========================
@@ -490,7 +502,7 @@ function RoomPage() {
         onToggleMute={() => setUserMuted((prev) => !prev)}
       />
 
-      <audio ref={audioRef} autoPlay />
+      <audio ref={audioRef} autoPlay muted />
     </div>
   );
 }

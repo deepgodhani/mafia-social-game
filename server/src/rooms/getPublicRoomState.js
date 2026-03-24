@@ -1,34 +1,17 @@
-import { PHASES } from "../game/phases.js";
-
+/**
+ * Creates a client-safe version of the room state.
+ * Key change: Converts the `players` object into an array.
+ * @param {object} room - The internal room object.
+ * @returns {object} A public-facing room object.
+ */
 export function getPublicRoomState(room) {
-  return {
-    id: room.id,
-    hostId: room.hostId,
+  if (!room) return null;
 
-    players: Object.values(room.players).map((p) => ({
-      id: p.id,
-      userId: p.userId,
-      name: p.name,
-      picture: p.picture,
-      alive: p.alive,
-      username: p.username || null,
-      displayName: p.displayName || p.name,
-      color: p.color || null,
-      connected: p.connected,
+  // Create a deep copy to avoid mutating the original server-side room object.
+  const publicRoom = JSON.parse(JSON.stringify(room));
 
-      // ⭐ only reveal roles after game ends
-      role: room.game.phase === PHASES.END_GAME ? p.role : null,
-    })),
+  // Convert the players object to an array for easier client-side rendering.
+  publicRoom.players = Object.values(publicRoom.players);
 
-    game: {
-      started: room.game.started,
-      phase: room.game.phase,
-      round: room.game.round,
-      timer: room.game.timer,
-      result: room.game.result,
-      lastNightResult: room.game.lastNightResult,
-      lastEliminated: room.game.lastEliminated || null,
-      lastVotes: room.game.lastVotes || [],
-    },
-  };
+  return publicRoom;
 }
