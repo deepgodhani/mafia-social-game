@@ -1,10 +1,10 @@
 # 🎭 Mafia Noir
 
-> A real-time, browser-based social deduction game with live voice chat and a noir aesthetic.
+> A real-time, browser-based social deduction game with live voice chat.
 
 ---
 
-## Demo / Screenshot
+## Demo 
 
 ```
 ┌─────────────────────────────────────────────────────┐
